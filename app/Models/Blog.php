@@ -11,6 +11,6 @@ class Blog extends Model
 
     protected $table = 'blog';
     protected $primaryKey = 'id';
-    protected $fillable = ['title', 'description', 'image', 'status', 'sort_order'];
+    protected $fillable = ['title', 'short_desc', 'description', 'image', 'status', 'sort_order'];
     protected $dates = ['deleted_at'];
 }

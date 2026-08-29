@@ -30,7 +30,7 @@ class Product extends Model
         'status',
         'created_by',
         'text2',
-        'short_text',
+        // 'short_text',
         'paperback_price',
         'ebook_price',
         'rustica_price',

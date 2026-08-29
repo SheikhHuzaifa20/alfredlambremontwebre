@@ -42,7 +42,7 @@ class BlogController extends Controller
                     return '<span class="text-muted">No Image</span>';
                 }
                 // Lazy loading image
-                return '<img src="'.asset($row->image).'" class="lazy-load" width="120" />';
+                return '<img src="' . asset($row->image) . '" class="lazy-load" width="120" />';
             })
             ->addColumn('status', function ($row) {
                 $checked = $row->status ? 'checked' : '';
@@ -59,7 +59,7 @@ class BlogController extends Controller
             ->addColumn('action', function ($row) {
                 $actions = '';
                 if (auth()->user()->hasPermission('edit_blog')) {
-                    $actions .= '<a href="'.url('admin/blog/'.$row->id.'/edit').'"
+                    $actions .= '<a href="' . url('admin/blog/' . $row->id . '/edit') . '"
                                     class="btn btn-sm btn-info"
                                     title="Edit Blog">
                                     <i class="la la-pencil"></i>
@@ -67,7 +67,7 @@ class BlogController extends Controller
                 }
                 if (auth()->user()->hasPermission('delete_blog')) {
                     $actions .= '<button class="btn btn-sm btn-danger deleteBlog"
-                                    data-id="'.$row->id.'"
+                                    data-id="' . $row->id . '"
                                     title="Delete Blog">
                                     <i class="la la-trash"></i>
                                   </button>';
@@ -86,6 +86,7 @@ class BlogController extends Controller
     public function store(StoreBlogRequest $request)
     {
         $data = $request->validated();
+        $data['short_desc'] = $request->short_desc;
 
         if ($request->hasFile('image')) {
             $data['image'] = $this->uploadFile($request->file('image'), 'uploads/blog/', 'blog');
@@ -112,6 +113,8 @@ class BlogController extends Controller
     public function update(UpdateBlogRequest $request, Blog $blog)
     {
         $data = $request->validated();
+        $data['short_desc'] = $request->short_desc;
+
 
         if ($request->hasFile('image')) {
             $this->deleteFile($blog->image);
@@ -163,17 +166,19 @@ class BlogController extends Controller
         $items = Blog::onlyTrashed()->orderByDesc('id')->get();
 
         return DataTables::of($items)
-            ->addColumn('checkbox', fn($row) =>
-                '<input type="checkbox" class="rowCheckbox" value="'.$row->id.'">'
+            ->addColumn(
+                'checkbox',
+                fn($row) =>
+                '<input type="checkbox" class="rowCheckbox" value="' . $row->id . '">'
             )
-            ->addColumn('image', function($row) {
+            ->addColumn('image', function ($row) {
                 return $row->image
-                    ? '<img src="'.asset($row->image).'" class="lazy-load" width="120" />'
+                    ? '<img src="' . asset($row->image) . '" class="lazy-load" width="120" />'
                     : '<span class="text-muted">No Image</span>';
             })
-            ->addColumn('action', function($row) {
-                $restore = '<button class="btn btn-sm btn-success restoreBlog" data-id="'.$row->id.'"><i class="la la-refresh"></i></button>';
-                $delete = '<button class="btn btn-sm btn-danger forceDeleteBlog" data-id="'.$row->id.'"><i class="la la-trash"></i></button>';
+            ->addColumn('action', function ($row) {
+                $restore = '<button class="btn btn-sm btn-success restoreBlog" data-id="' . $row->id . '"><i class="la la-refresh"></i></button>';
+                $delete = '<button class="btn btn-sm btn-danger forceDeleteBlog" data-id="' . $row->id . '"><i class="la la-trash"></i></button>';
                 return $restore . ' ' . $delete;
             })
             ->rawColumns(['checkbox', 'image', 'action'])

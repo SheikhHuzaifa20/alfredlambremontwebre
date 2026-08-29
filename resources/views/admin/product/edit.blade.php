@@ -283,7 +283,7 @@
                                                 <div class="form-group">
                                                     <label>Select Category</label>
                                                     <select id="category" class="form-control select2"
-                                                        name="category_id" required multiple
+                                                        name="category_id[]" required multiple
                                                         data-selected="{{ old('category_id', $product->category_id) }}">
                                                         <option value="">Select Category</option>
                                                     </select>

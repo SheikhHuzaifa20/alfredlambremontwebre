@@ -69,14 +69,14 @@
                                                 </select>
                                             </div>
                                         </div>
-                                        <div class="col-md-12">
+                                        {{-- <div class="col-md-12">
                                             <div class="form-group">
                                                 <label for="summary-ckeditor">Testimonial Image</label>
                                                 <div class="upload-photo">
                                                     <input type="file" name="image" id="input-file-now" class="dropify" required />
                                                 </div>
                                             </div>
-                                        </div>
+                                        </div> --}}
                                     </div>
                                 </div>
                                 <div class="form-actions text-right pb-0">

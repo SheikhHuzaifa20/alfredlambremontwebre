@@ -187,7 +187,19 @@
             <h2>What Our Customer Say</h2>
         </div>
         <div class="testimonials-carousel owl-carousel owl-theme">
-            <div class="item">
+            @foreach ($testinomial as $testimonial)
+                <div class="item">
+                    <div class="card">
+                        <h3>{{ $testimonial->title }} <span>
+                                @for ($i = 0; $i < $testimonial->rating; $i++)
+                                    <i class="fa-solid fa-star"></i>
+                                @endfor
+                            </span></h3>
+                        <p>{!! $testimonial->description !!}</p>
+                    </div>
+                </div>
+            @endforeach
+            {{-- <div class="item">
                 <div class="card">
                     <h3>Thaddeus Vance <span><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
                                 class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
@@ -222,7 +234,7 @@
                         of trying to stay truly awake.
                     </p>
                 </div>
-            </div>
+            </div> --}}
         </div>
     </div>
 </section>

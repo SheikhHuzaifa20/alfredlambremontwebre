@@ -136,7 +136,7 @@ class ProductController extends Controller
         try {
             $data = $request->validated();
             $data['text2'] = $request->text2;
-            $data['short_text'] = $request->short_text;
+            // $data['short_text'] = $request->short_text;
             $data['paperback_price'] = $request->paperback_price;
             $data['ebook_price'] = $request->ebook_price;
             $data['rustica_price'] = $request->rustica_price;
@@ -330,7 +330,7 @@ class ProductController extends Controller
             $data['rustica_price'] = $request->rustica_price;
             $data['taschenbuch_price'] = $request->taschenbuch_price;
             $data['text2'] = $request->text2;
-            $data['short_text'] = $request->short_text;
+            // $data['short_text'] = $request->short_text;
 
             // Generate slug
             $data['slug'] = $request->slug ?? \Illuminate\Support\Str::slug($data['name']);

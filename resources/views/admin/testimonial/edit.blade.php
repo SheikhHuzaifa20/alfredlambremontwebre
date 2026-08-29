@@ -68,7 +68,7 @@
                                                 </select>
                                             </div>
                                         </div>
-                                        <div class="col-md-12">
+                                        {{-- <div class="col-md-12">
                                             <div class="form-group">
                                                 <label for="summary-ckeditor">Testimonial Image</label>
                                                 <img src="{{ asset($testimonial->image) }}" class="d-block" alt="" width="100%">
@@ -77,7 +77,7 @@
                                                     <input type="file" name="image" id="input-file-now" class="dropify" />
                                                 </div>
                                             </div>
-                                        </div>
+                                        </div> --}}
                                     </div>
                                 </div>
                                 <div class="form-actions text-right pb-0">

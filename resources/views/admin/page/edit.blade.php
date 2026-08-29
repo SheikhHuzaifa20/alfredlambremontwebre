@@ -73,16 +73,18 @@
                                                 </div>
                                             </div>
 
-                                            <div class="col-md-12">
-                                                <div class="form-group">
-                                                    <label for="image">Image</label>
-                                                    <input class="form-control dropify" name="image" type="file"
-                                                        id="image"
-                                                        {{ $page->image ? 'data-default-file=' . asset($page->image) : '' }}
-                                                        {{ $page->image ? '' : 'required' }} value="{{ $page->image }}">
+                                            @if ($page->id != 8 && $page->id != 9 && $page->id != 10 && $page->id != 11)
+                                                <div class="col-md-12">
+                                                    <div class="form-group">
+                                                        <label for="image">Image</label>
+                                                        <input class="form-control dropify" name="image" type="file"
+                                                            id="image"
+                                                            {{ $page->image ? 'data-default-file=' . asset($page->image) : '' }}
+                                                            {{ $page->image ? '' : 'required' }}
+                                                            value="{{ $page->image }}">
+                                                    </div>
                                                 </div>
-                                            </div>
-
+                                            @endif
                                             @foreach ($page->sections as $section)
                                                 <div class="col-md-12 section-block" id="section-{{ $section->id }}">
                                                     <div class="form-group">
@@ -276,19 +278,19 @@
                                     <div class="form-group">
                                         <label>${res.section.label}</label>`;
 
-                                    if (res.section.type === 'text') {
-                                        html +=
-                                            `<input type="text" name="${res.section.slug}" class="form-control">`;
-                                    } else if (res.section.type === 'textarea') {
-                                        html +=
-                                            `<textarea name="${res.section.slug}" class="form-control" id="costom-summary-ckeditor-${res.section.id}"></textarea>`;
-                                    } else if (res.section.type === 'image' || res.section.type ===
-                                        'video') {
-                                        html +=
-                                            `<input type="file" name="${res.section.slug}" class="dropify">`;
-                                    }
+                            if (res.section.type === 'text') {
+                                html +=
+                                    `<input type="text" name="${res.section.slug}" class="form-control">`;
+                            } else if (res.section.type === 'textarea') {
+                                html +=
+                                    `<textarea name="${res.section.slug}" class="form-control" id="costom-summary-ckeditor-${res.section.id}"></textarea>`;
+                            } else if (res.section.type === 'image' || res.section.type ===
+                                'video') {
+                                html +=
+                                    `<input type="file" name="${res.section.slug}" class="dropify">`;
+                            }
 
-                                    html += `
+                            html += `
                                         <button type="button" class="btn btn-danger btn-sm mt-1 deleteSection"
                                                 data-id="${res.section.id}">
                                             <i class="la la-trash"></i> Delete

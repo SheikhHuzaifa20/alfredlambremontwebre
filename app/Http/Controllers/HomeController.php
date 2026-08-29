@@ -8,6 +8,7 @@ use App\schedule;
 use App\newsletter;
 use App\post;
 use App\banner;
+use Blog;
 use App\imagetable;
 use DB;
 use Mail;
@@ -55,7 +56,8 @@ class HomeController extends Controller
     public function index()
     {
         $banner = DB::table('banners')->where('status', 1)->first();
-        return view('index', compact('banner'));
+        $testinomial = DB::class::table('testimonial')->where('status', 1)->get();
+        return view('index', compact('banner', 'testinomial'));
     }
 
     public function about()
@@ -63,9 +65,22 @@ class HomeController extends Controller
         return view('about');
     }
 
-    public function blog()
+    // public function blog()
+    // {
+    //     $blogs = Blog::latest()->get();
+
+    //     return view('blog', compact('blogs'));
+    // }
+    public function blogDetail($id)
     {
-        return view('blog');
+        $blog = DB::class::table('blog')->where('id', $id)->first();
+// dd($blog);
+        // $recentBlogs = Blog::where('id', '!=', $blog->id)
+        //     ->latest()
+        //     ->take(5)
+        //     ->get();
+
+        return view('blog', compact('blog'));
     }
 
     public function books()
@@ -85,7 +100,9 @@ class HomeController extends Controller
 
     public function exopolitics()
     {
-        return view('exopolitics');
+        $blogs = DB::table('blog')->where('status', 1)->orderByDesc('id')->get();
+
+        return view('exopolitics', compact('blogs'));
     }
 
     public function foreignRights()

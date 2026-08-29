@@ -53,20 +53,20 @@
                                         <div class="col-md-12">
                                             <div class="form-group">
                                                 <label for="summary-ckeditor">Short Description</label>
-                                                <textarea name="description" id="summary-ckeditor" cols="30" rows="10" class="form-control" required></textarea>
+                                                <textarea name="short_desc" id="summary-ckeditor" cols="30" rows="10" class="form-control" required></textarea>
                                             </div>
                                         </div>
                                         <div class="col-md-12">
                                             <div class="form-group">
                                                 <label for="summary-ckeditor3">Description</label>
-                                                <textarea name="description" id="summary-ckeditor3" cols="30" rows="10" class="form-control" required></textarea>
+                                                <textarea name="description" id="summary-ckeditor3" cols="30" rows="10" class="form-control"></textarea>
                                             </div>
                                         </div>
                                         <div class="col-md-12">
                                             <div class="form-group">
                                                 <label for="summary-ckeditor">Blog Image</label>
                                                 <div class="upload-photo">
-                                                    <input type="file" name="image" id="input-file-now" class="dropify" required />
+                                                    <input type="file" name="image" id="input-file-now" class="dropify" />
                                                 </div>
                                             </div>
                                         </div>

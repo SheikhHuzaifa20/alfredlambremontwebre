@@ -51,8 +51,14 @@
                                         </div>
                                         <div class="col-md-12">
                                             <div class="form-group">
-                                                <label for="summary-ckeditor">Description</label>
-                                                <textarea name="description" id="summary-ckeditor" cols="30" rows="10" class="form-control" required>{{ $blog->description }}</textarea>
+                                                <label for="summary-ckeditor">Short Description</label>
+                                                <textarea name="short_desc" id="summary-ckeditor" cols="30" rows="10" class="form-control" required>{{ $blog->short_desc }}</textarea>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-12">
+                                            <div class="form-group">
+                                                <label for="summary-ckeditor3">Description</label>
+                                                <textarea name="description" id="summary-ckeditor3" cols="30" rows="10" class="form-control" required>{{ $blog->description }}</textarea>
                                             </div>
                                         </div>
                                         <div class="col-md-12">

@@ -62,7 +62,7 @@
                                     <th>ID</th>
                                     <th>Title</th>
                                     <th>Rating</th>
-                                    <th>Image</th>
+                                    {{-- <th>Image</th> --}}
                                     <th>Status</th>
                                     <th>Created At</th>
                                     <th class="text-center">Sort</th>
@@ -112,7 +112,7 @@ $(function() {
             },
             { data: 'title', name: 'title' },
             { data: 'rating', name: 'rating', orderable: false, searchable: false },
-            { data: 'image', name: 'image', orderable: false, searchable: false },
+            // { data: 'image', name: 'image', orderable: false, searchable: false },
             { data: 'status', name: 'status', orderable: false, searchable: false },
             { data: 'created_at', name: 'created_at' },
             {
