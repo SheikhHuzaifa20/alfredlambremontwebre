@@ -1,0 +1,82 @@
+/* about css start */
+
+.wrap.bottom-para {
+    grid-template-columns: 12fr 0fr;
+    margin-top: 30px;
+}
+
+/* about css end */
+
+/* exopolitics css start */
+
+div#exopolitics {
+    padding: 50px 0;
+}
+
+.posted-box {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    padding: 38px 34px;
+    background: rgba(20, 27, 61, .35);
+    margin-bottom: 50px;
+}
+
+.posted-box-content h5 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+}
+
+.posted-box-content h5 img {
+    width: 18px;
+}
+
+.posted-box-content h5 .profile-posted {
+    filter: brightness(0) invert(1);
+}
+
+.posted-box-content {
+    width: 70%;
+}
+
+/* exopolitics css end */
+
+/* exopolitics inner css start */
+
+div#blog-inner .posted-box-btn {
+    width: 30%;
+}
+
+div#blog-inner .posted-box {
+    align-items: self-start;
+}
+
+div#blog-inner .posted-box-content h5 {
+    justify-content: center;
+}
+
+div#blog-inner .posted-box-content h3 {
+    text-align: center;
+    font-size: 30px;
+}
+
+div#blog-inner img {
+    margin: 20px 0;
+}
+
+
+div#blog-inner .posted-box-content p {
+    margin: 15px 0;
+}
+
+.posted-box-btn p {
+    margin: 15px 0;
+    font-weight: 100;
+    border-bottom: 1px solid white;
+}
+
+/* exopolitics inner css end */
