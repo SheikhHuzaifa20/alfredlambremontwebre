@@ -48,7 +48,7 @@ class OrderController extends Controller
         return DataTables::of($query)
 
             ->addColumn('customer_name', function ($row) {
-                return $row->user->name ?? '-';
+                return $row->user->name ?? trim(($row->delivery_first_name ?? '') . ' ' . ($row->delivery_last_name ?? '')) ?: 'Guest Customer';
             })
 
             ->addColumn('created_at', function ($row) {
@@ -110,7 +110,7 @@ class OrderController extends Controller
 
     public function show($id)
     {
-        $order = Orders::with(['order_products.product', 'status_logs', 'shippingAddress.auditLogs.user', 'billingAddress.auditLogs.user'])->findOrFail($id);
+        $order = Orders::with(['user', 'order_products.product', 'status_logs', 'shippingAddress.auditLogs.user', 'billingAddress.auditLogs.user'])->findOrFail($id);
         $shippingAddress = $order->shippingAddress;
 
         $statusMap = [

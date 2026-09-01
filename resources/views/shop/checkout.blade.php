@@ -335,55 +335,12 @@
             <div>
                 <h2 class="co-heading">Billing Details</h2>
 
-                @if(!Auth::check())
-                <div class="login-nudge">
-                    Returning customer? <a href="{{ url('signin') }}">Click here to sign in</a>
-                </div>
-                @endif
-
                 <form action="{{ route('order.place') }}" method="POST" id="order-place" class="co-form">
                     @csrf
                     <input type="hidden" name="payment_id"     value="">
                     <input type="hidden" name="payer_id"       value="">
                     <input type="hidden" name="payment_status" value="">
                     <input type="hidden" name="payment_method" id="payment_method" value="stripe">
-
-                    @if(Auth::check())
-                        @php $_getUser = DB::table('users')->where('id', Auth::user()->id)->first(); @endphp
-
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="f-name">First Name *</label>
-                                <input id="f-name" name="first_name" type="text" required
-                                       placeholder="First Name"
-                                       value="{{ old('first_name', $_getUser->name ?? '') }}">
-                                @error('first_name')<span class="err-msg">{{ $message }}</span>@enderror
-                            </div>
-                            <div class="form-group">
-                                <label for="l-name">Last Name</label>
-                                <input id="l-name" name="last_name" type="text"
-                                       placeholder="Last Name"
-                                       value="{{ old('last_name') }}">
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="email">Email Address *</label>
-                            <input id="email" name="email" type="email" required
-                                   placeholder="you@example.com"
-                                   value="{{ old('email', $_getUser->email ?? '') }}">
-                            @error('email')<span class="err-msg">{{ $message }}</span>@enderror
-                        </div>
-
-                        <div class="form-group">
-                            <label for="phone_no">Phone *</label>
-                            <input name="phone_no" type="text" required
-                                   placeholder="+1 555 000 0000"
-                                   value="{{ old('phone_no') }}">
-                            @error('phone_no')<span class="err-msg">{{ $message }}</span>@enderror
-                        </div>
-
-                    @else
 
                         <div class="form-row">
                             <div class="form-group">
@@ -412,25 +369,6 @@
                                    placeholder="+1 555 000 0000" value="{{ old('phone_no') }}">
                             @error('phone_no')<span class="err-msg">{{ $message }}</span>@enderror
                         </div>
-
-                        <div class="form-group" style="display:flex;align-items:center;gap:10px">
-                            <input type="checkbox" name="create_account" id="create_account"
-                                   {{ old('create_account') ? 'checked' : '' }}
-                                   style="width:auto;min-width:auto;flex:unset">
-                            <label for="create_account" style="margin:0;cursor:pointer">Create an account?</label>
-                        </div>
-                        <div class="form-row" id="pw-fields">
-                            <div class="form-group">
-                                <label>Password</label>
-                                <input type="password" name="password" placeholder="Password">
-                                @error('password')<span class="err-msg">{{ $message }}</span>@enderror
-                            </div>
-                            <div class="form-group">
-                                <label>Confirm Password</label>
-                                <input type="password" name="confirm_password" placeholder="Confirm">
-                            </div>
-                        </div>
-                    @endif
 
                     {{-- Address --}}
                     <h2 class="co-heading" style="margin-top:32px">Shipping Address</h2>

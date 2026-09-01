@@ -233,7 +233,7 @@
                             <div class="col-md-3">
                                 <div class="text-muted">Customer</div>
                                 <div class="fw-semibold">
-                                    {{ $order->user->name ?? 'Guest' }}
+                                    {{ $order->user->name ?? trim(($order->delivery_first_name ?? '') . ' ' . ($order->delivery_last_name ?? '')) ?: 'Guest Customer' }}
                                 </div>
                             </div>
 
@@ -255,7 +255,7 @@
                                     <tr>
 
                                         <th>ID </th>
-                                        <th>Product</th>
+                                        <th>Book</th>
                                         <th>Price</th>
                                         <th>QTY</th>
                                         <th>Total</th>
@@ -264,18 +264,34 @@
                                 </thead>
                                 <tbody>
                                     @foreach($order->order_products as $orderProduct)
+                                        @php
+                                            $pName = $orderProduct->order_products_name ?? $orderProduct->product?->name ?? 'Book';
+                                            $pPrice = $orderProduct->order_products_price ?? $orderProduct->product?->price ?? 0;
+                                            $pQty = $orderProduct->order_products_qty ?? 1;
+                                            $pSubtotal = $orderProduct->order_products_subtotal ?? ($pPrice * $pQty);
+                                        @endphp
                                         <tr>
-                                            <td>{{ $orderProduct->product?->id }}</td>
+                                            <td>{{ $orderProduct->product?->id ?? $orderProduct->id }}</td>
                                             <td>
                                                 <div class="d-flex align-items-center">
-                                                    <img src="https://demos.themeselection.com/sneat-bootstrap-html-laravel-admin-template/demo/assets/img/products/oneplus.png"
-                                                        alt="Product Name" class="rounded me-2" width="40" height="40">
-                                                    <span>{{ $orderProduct->product?->name }}</span>
+                                                    @if($orderProduct->product?->image)
+                                                        <img src="{{ asset('uploads/product/'.$orderProduct->product->image) }}"
+                                                            alt="{{ $pName }}" class="rounded me-2" width="40" height="40" style="object-fit:cover;">
+                                                    @else
+                                                        <img src="{{ asset('assets/imgs/default.png') }}"
+                                                            alt="{{ $pName }}" class="rounded me-2" width="40" height="40" style="object-fit:cover;">
+                                                    @endif
+                                                    <div>
+                                                        <span class="fw-semibold">{{ $pName }}</span>
+                                                        @if($orderProduct->mat_language)
+                                                            <div class="text-muted small">Format: {{ $orderProduct->mat_language }}</div>
+                                                        @endif
+                                                    </div>
                                                 </div>
                                             </td>
-                                            <td>${{ $orderProduct->product?->price ?? 0 }}</td>
-                                            <td>{{ $orderProduct->order_products_qty }}</td>
-                                            <td>${{ ($orderProduct->product?->price ?? 0) * $orderProduct->order_products_qty }}</td>
+                                            <td>${{ number_format($pPrice, 2) }}</td>
+                                            <td>{{ $pQty }}</td>
+                                            <td>${{ number_format($pSubtotal, 2) }}</td>
                                         </tr>
                                     @endforeach
                                 </tbody>
@@ -286,15 +302,15 @@
                                         <tbody>
                                             <tr>
                                                 <td class="fw-semibold">Subtotal:</td>
-                                                <td>${{ $order->order_products->sum(fn($op) => ($op->product?->price ?? 0) * $op->order_products_qty) }}</td>
+                                                <td>${{ number_format($order->order_item_total ?? $order->order_products->sum(fn($op) => ($op->order_products_price ?? $op->product?->price ?? 0) * $op->order_products_qty), 2) }}</td>
                                             </tr>
                                             <tr>
-                                                <td class="fw-semibold">Tax:</td>
-                                                <td>${{ $order->shipping_tax ?? 0.00 }}</td>
+                                                <td class="fw-semibold">Shipping / Tax:</td>
+                                                <td>${{ number_format($order->order_shipping ?? $order->shipping_tax ?? 0.00, 2) }}</td>
                                             </tr>
                                             <tr class="border-top">
                                                 <td class="fw-bold fs-5">Total:</td>
-                                                <td class="fw-bold fs-5">${{ $order->order_products->sum(fn($op) => ($op->product?->base_price ?? 0) * $op->order_products_qty) + ($order->discount_amount ?? 0.00) + ($order->shipping_tax ?? 0.00) }}</td>
+                                                <td class="fw-bold fs-5">${{ number_format($order->order_total ?? (($order->order_item_total ?? $order->order_products->sum(fn($op) => ($op->order_products_price ?? $op->product?->price ?? 0) * $op->order_products_qty)) + ($order->order_shipping ?? $order->shipping_tax ?? 0.00)), 2) }}</td>
                                             </tr>
                                         </tbody>
                                     </table>
@@ -324,12 +340,18 @@
 
                         <div class="d-flex align-items-center">
                             <img src="{{ $order->user->pic ?? asset('assets/imgs/default.png') }}"
-                                class="rounded-circle me-3" width="48">
+                                class="rounded-circle me-3" width="48" onerror="this.src='{{ asset('assets/imgs/default.png') }}'">
 
                             <div>
-                                <div class="fw-semibold">{{ $order->user->name }}</div>
+                                <div class="fw-semibold">
+                                    {{ $order->user->name ?? trim(($order->delivery_first_name ?? '') . ' ' . ($order->delivery_last_name ?? '')) ?: 'Guest Customer' }}
+                                </div>
                                 <div class="text-muted small">
-                                    Customer ID: #{{ $order->user->id }}
+                                    @if($order->user)
+                                        Customer ID: #{{ $order->user->id }}
+                                    @else
+                                        Guest Customer
+                                    @endif
                                 </div>
                             </div>
                         </div>
@@ -341,11 +363,11 @@
                         <div class="small">
                             <div>
                                 <span class="text-muted">Email:</span>
-                                {{ $order->user->email }}
+                                {{ $order->user->email ?? $order->order_email ?? 'N/A' }}
                             </div>
                             <div>
                                 <span class="text-muted">Mobile:</span>
-                                {{ $order->user->phone ?? 'N/A' }}
+                                {{ $order->user->phone ?? $order->delivery_phone_no ?? 'N/A' }}
                             </div>
                         </div>
 
@@ -355,18 +377,24 @@
                 <x-address-card
                     title="Shipping Address"
                     :address="$order->shippingAddress"
+                    :order="$order"
                 />
 
                 <x-address-card
                     title="Billing Address"
                     :address="$order->billingAddress"
+                    :order="$order"
                 />
 
                 <div class="card mt-2">
                     <div class="card-body">
                         <h6 class="fw-bold mb-2">Address Change History</h6>
 
-                        @forelse($shippingAddress->auditLogs as $log)
+                        @php
+                            $auditLogs = $order->shippingAddress?->auditLogs ?? collect([]);
+                        @endphp
+
+                        @forelse($auditLogs as $log)
                             <div class="small border-bottom py-2">
                                 <div>
                                     <strong>Updated by:</strong>

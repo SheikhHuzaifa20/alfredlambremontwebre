@@ -78,13 +78,13 @@
 @section('content')
     <div class="content-header row">
         <div class="content-header-left col-md-12 col-12 mb-2 breadcrumb-new">
-            <h3 class="content-header-title mb-0 d-inline-block">Create New Product</h3>
+            <h3 class="content-header-title mb-0 d-inline-block">Create New Book</h3>
             <div class="row breadcrumbs-top d-inline-block">
                 <div class="breadcrumb-wrapper col-12">
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item"><a href="{{ url('admin/dashboard') }}">Home</a></li>
-                        <li class="breadcrumb-item"><a href="{{ url('admin/product') }}">Product Management</a></li>
-                        <li class="breadcrumb-item active">Create New Product</li>
+                        <li class="breadcrumb-item"><a href="{{ url('admin/product') }}">Book Management</a></li>
+                        <li class="breadcrumb-item active">Create New Book</li>
                     </ol>
                 </div>
             </div>
@@ -99,7 +99,7 @@
                     <div class="col-md-7">
                         <div class="card">
                             <div class="card-header">
-                                <h4 class="card-title" id="basic-layout-form">Product Info</h4>
+                                <h4 class="card-title" id="basic-layout-form">Book Info</h4>
                                 <a class="heading-elements-toggle"><i class="la la-ellipsis-v font-medium-3"></i></a>
                                 <div class="heading-elements">
                                     <ul class="list-inline mb-0">
@@ -123,7 +123,7 @@
                                             </div>
                                             <div class="col-md-12">
                                                 <div class="form-group">
-                                                    <label for="name">Product Name</label>
+                                                    <label for="name">Book Name</label>
                                                     <input class="form-control" required name="name" type="text"
                                                         id="name" value="{{ old('name') }}">
                                                 </div>
@@ -162,7 +162,7 @@
                         </div>
                         <div class="card">
                             <div class="card-header">
-                                <h4 class="card-title" id="basic-layout-form">Product Image</h4>
+                                <h4 class="card-title" id="basic-layout-form">Book Image</h4>
                                 <a class="heading-elements-toggle"><i class="la la-ellipsis-v font-medium-3"></i></a>
                                 <div class="heading-elements">
                                     <ul class="list-inline mb-0">
@@ -265,7 +265,7 @@
                                     </div> --}}
                                     <div class="form-actions text-right pb-0">
                                         <button type="submit" class="btn btn-primary">
-                                            <i class="la la-check-square-o"></i> Add Product
+                                            <i class="la la-check-square-o"></i> Add Book
                                         </button>
                                     </div>
                                 </div>

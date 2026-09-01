@@ -52,7 +52,10 @@
             <span id="subtotal">$0.00</span>
         </div>
         <p class="ship">Shipping and tax calculated at checkout. Ebooks are delivered by email within minutes.</p>
-        <a href="{{ route('checkout') }}" class="checkout" id="checkoutBtn">Proceed to checkout</a>
+        <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+            <button type="button" class="btn btn-ghost" id="updateCartBtn" onclick="window.loadCart(); window.showAlert('Cart updated successfully', 'success');" style="flex:1; padding:10px; font-size:12px; border:1px solid rgba(237,231,218,.2); cursor:pointer;">Update Cart</button>
+            <a href="{{ route('checkout') }}" class="checkout" id="checkoutBtn" style="flex:2;">Proceed to checkout</a>
+        </div>
     </div>
 </aside>
 
@@ -61,28 +64,37 @@
 <!-- ============================================================ -->
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     // ============================================
     // GLOBAL VARIABLES
     // ============================================
     const csrfToken = "{{ csrf_token() }}";
     const cartAddUrl = "{{ route('cart.add') }}";
+    const cartUpdateUrl = "{{ route('update_cart') }}";
     const cartRemoveUrl = "{{ route('cart.remove') }}";
     const cartDataUrl = "{{ route('cart.data') }}";
     const checkoutUrl = "{{ route('checkout') }}";
 
     // ============================================
-    // TOAST FUNCTION
+    // SWEETALERT & TOAST HELPER
     // ============================================
+    window.showAlert = function(title, icon = 'success') {
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                icon: icon,
+                title: title,
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 2500,
+                timerProgressBar: true
+            });
+        }
+    };
+
     window.showToast = function(message) {
-        const toast = document.getElementById('toast');
-        if (!toast) return;
-        toast.textContent = message;
-        toast.classList.add('show');
-        clearTimeout(toast._timer);
-        toast._timer = setTimeout(function() {
-            toast.classList.remove('show');
-        }, 3000);
+        window.showAlert(message, 'info');
     };
 
     // ============================================
@@ -129,14 +141,14 @@
                     <h4>${itemName}</h4>
                     <p class="lf">${itemFormat}</p>
                     <div class="qty">
-                        <button onclick="window.updateQty('${itemKey}', -1)">−</button>
+                        <button type="button" onclick="window.updateQty('${itemKey}', -1)">−</button>
                         <span>${item.qty || 1}</span>
-                        <button onclick="window.updateQty('${itemKey}', 1)">+</button>
+                        <button type="button" onclick="window.updateQty('${itemKey}', 1)">+</button>
                     </div>
                 </div>
                 <div>
                     <p class="lp">$${itemTotal.toFixed(2)}</p>
-                    <button class="remove" onclick="window.removeFromCart('${itemKey}')">Remove</button>
+                    <button type="button" class="remove" onclick="window.removeFromCart('${itemKey}')">Remove</button>
                 </div>
             </div>
             `;
@@ -163,9 +175,13 @@
             const item = data.cart.find(i => i.key === key);
             if (!item) return;
 
-            const newQty = Math.max(1, (item.qty || 1) + delta);
+            const newQty = (item.qty || 1) + delta;
+            if (newQty < 1) {
+                window.removeFromCart(key);
+                return;
+            }
 
-            fetch(cartAddUrl, {
+            fetch(cartUpdateUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -173,16 +189,19 @@
                     'Accept': 'application/json',
                 },
                 body: JSON.stringify({
-                    product_id: item.id,
-                    format: item.mat_language || 'Paperback',
-                    price: item.baseprice || 0,
+                    key: key,
                     qty: newQty
                 })
             })
             .then(r => r.json())
             .then(result => {
                 if (result.success) {
-                    window.loadCart();
+                    window.renderCart(result.cart);
+                    const cartCountEl = document.getElementById('cartCount');
+                    if (cartCountEl && result.count !== undefined) {
+                        cartCountEl.textContent = result.count;
+                    }
+                    window.showAlert('Quantity updated', 'success');
                 }
             })
             .catch(() => window.loadCart());
@@ -207,7 +226,7 @@
         .then(data => {
             if (data.success) {
                 window.loadCart();
-                window.showToast('Item removed from cart');
+                window.showAlert('Item removed from cart', 'info');
             }
         })
         .catch(() => window.loadCart());

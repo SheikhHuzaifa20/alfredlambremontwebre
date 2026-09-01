@@ -89,6 +89,41 @@ class ProductController extends Controller
         }
     }
 
+    public function updateCart(Request $request)
+    {
+        try {
+            $request->validate([
+                'key' => 'required|string',
+                'qty' => 'required|integer|min:1',
+            ]);
+
+            $cart = Session::get('cart', []);
+
+            if (isset($cart[$request->key])) {
+                $cart[$request->key]['qty'] = max(1, (int) $request->qty);
+                Session::put('cart', $cart);
+            }
+
+            $count = collect($cart)->filter(fn($v) => is_array($v) && isset($v['qty']))->sum('qty');
+            $total = collect($cart)->filter(fn($v) => is_array($v) && isset($v['baseprice']))
+                ->sum(fn($v) => $v['baseprice'] * $v['qty']);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Cart updated successfully',
+                'count'   => $count,
+                'total'   => number_format($total, 2),
+                'cart'    => $this->cartItems($cart),
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function getCartData()
 {
     $cart = Session::get('cart', []);

@@ -438,6 +438,9 @@
                             if (data.success) {
                                 const cc = document.getElementById('cartCount');
                                 if (cc && data.count !== undefined) cc.textContent = data.count;
+                                if (typeof window.loadCart === 'function') window.loadCart();
+                                if (typeof window.openCart === 'function') window.openCart();
+                                if (typeof window.showAlert === 'function') window.showAlert(data.message || 'Book added to cart!', 'success');
                             }
                         }).catch(() => {});
 

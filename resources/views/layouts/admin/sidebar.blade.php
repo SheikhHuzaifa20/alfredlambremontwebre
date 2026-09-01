@@ -124,7 +124,7 @@
                         <a class="menu-item" href="{{ route('admin.subcategory.index') }}"><i></i><span>SubCategories</span></a>
                     </li> --}}
                     <li class="{{ request()->routeIs('admin.product*') ? 'active' : '' }}">
-                        <a class="menu-item" href="{{ route('admin.product.index') }}"><i></i><span>Products</span></a>
+                        <a class="menu-item" href="{{ route('admin.product.index') }}"><i></i><span>Books</span></a>
                     </li>
                     <li class="{{ request()->routeIs('admin.orders*') ? 'active' : '' }}">
                         <a class="menu-item" href="{{ route('admin.orders.index') }}"><i></i><span>Orders</span></a>

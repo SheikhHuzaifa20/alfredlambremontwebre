@@ -11,7 +11,7 @@ use App\imagetable;
 use App\Product;
 use App\Banner;
 use App\Models\Orders;
-use App\Models\OrderProducts; 
+use App\Models\OrderProducts;
 use App\Http\Requests\OrderRequest;
 use DB;
 use View;
@@ -302,44 +302,41 @@ class OrderController extends Controller
 
 	public function placeOrder(Request $request)
 	{
-		$validateArr = array();
-		$messageArr = array();
-		$validateArr['country'] = 'required|max:50';
-		$validateArr['first_name'] = 'required|max:255';
-		$validateArr['address_line_1'] = 'required|max:255';
-		$validateArr['city'] = 'required|max:50';
-		$validateArr['email'] = 'required|max:20';
-		$validateArr['phone_no'] = 'required|max:20';
-		$messageArr['first_name.required'] = 'The first name field is required.';
+		// ============================================
+		// VALIDATION
+		// ============================================
+		$validateArr = [
+			'country' => 'required|max:50',
+			'first_name' => 'required|max:255',
+			'address_line_1' => 'required|max:255',
+			'city' => 'required|max:50',
+			'email' => 'required|email|max:255',
+			'phone_no' => 'required|max:20',
+		];
 
-		$id = 0;
-		if (isset($_POST['create_account'])) {
-			if ($_POST['password'] == '') {
-				$validateArr['password'] = 'min:6|required_with:confirm_password|same:confirm_password';
-				$validateArr['confirm_password'] = 'min:6';
-			} else {
-				$validateArr['email'] = 'required|max:255|email|unique:users';
-				$this->validate($request, $validateArr, $messageArr);
+		$messageArr = [
+			'first_name.required' => 'The first name field is required.',
+			'email.required' => 'The email field is required.',
+			'email.email' => 'Please enter a valid email address.',
+		];
 
-				$pw = Hash::make($_POST['password']);
-				$fullName = $request->first_name . " " . $request->last_name;
-
-				DB::insert("INSERT INTO users(email,name,password) values('" . $_POST['email'] . "','" . $fullName . "','" . $pw . "')");
-
-				$user = DB::table('users')->orderBy('id', 'desc')->first();
-				$id = $user->id;
-			}
-		}
-
-		$validateArr['email'] = 'required|max:255|email';
 		$this->validate($request, $validateArr, $messageArr);
 
-		if (Auth::check()) {
-			$id = Auth::user()->id;
+		// ============================================
+		// GET CART
+		// ============================================
+		$cart = Session::get('cart', []);
+
+		// Check if cart is empty
+		if (empty($cart) || count($cart) == 0) {
+			Session::flash('flash_message', 'Your cart is empty.');
+			Session::flash('alert-class', 'alert-warning');
+			return redirect()->route('books');
 		}
 
-		$cart = Session::get('cart');
-
+		// ============================================
+		// CALCULATE SUBTOTAL
+		// ============================================
 		$subtotal = 0;
 		foreach ($cart as $key => $value) {
 			if ($key != 'shipping' && is_array($value) && isset($value['baseprice']) && isset($value['qty'])) {
@@ -348,126 +345,160 @@ class OrderController extends Controller
 		}
 
 		// ============================================
-		// USING Orders MODEL (Capital O)
+		// CREATE ADDRESS RECORD
+		// ============================================
+		$address = \App\Models\Address::create([
+			'user_id'   => Auth::check() ? Auth::id() : 0,
+			'type'      => 'shipping',
+			'recipient' => trim($request->first_name . ' ' . ($request->last_name ?? '')),
+			'street'    => $request->address_line_1 . ($request->filled('address_line_2') ? ' ' . $request->address_line_2 : ''),
+			'city'      => $request->city,
+			'state'     => $request->state ?? '',
+			'zip'       => $request->zip_code ?? '',
+			'country'   => $request->country,
+			'phone'     => $request->phone_no,
+		]);
+
+		// ============================================
+		// CREATE ORDER
 		// ============================================
 		$order = new Orders();
-		$order->payment_method = $request->payment_method;
+		$order->payment_method = $request->payment_method ?? 'stripe';
 		$order->delivery_country = $request->country;
 		$order->country_code = $request->country_code;
 		$order->delivery_first_name = $request->first_name;
-		$order->delivery_last_name = $request->last_name;
-		$order->order_company = $request->company_name;
+		$order->delivery_last_name = $request->last_name ?? '';
+		$order->order_company = $request->company_name ?? '';
 		$order->delivery_address_1 = $request->address_line_1;
-		$order->delivery_address_2 = $request->address_line_2;
+		$order->delivery_address_2 = $request->address_line_2 ?? '';
 		$order->delivery_city = $request->city;
-		$order->delivery_state = $request->state;
-		$order->delivery_zip_code = $request->zip_code;
-		$order->area = $request->area;
-		$order->landmark = $request->landmark;
-		$order->floor_num = $request->floor_num;
-		$order->building = $request->building;
-		$order->order_shipping = isset($cart['shipping']) ? $cart['shipping'] : 0;
+		$order->delivery_state = $request->state ?? '';
+		$order->delivery_zip_code = $request->zip_code ?? '';
+		$order->area = $request->area ?? '';
+		$order->landmark = $request->landmark ?? '';
+		$order->floor_num = $request->floor_num ?? '';
+		$order->building = $request->building ?? '';
+		$order->order_shipping = $cart['shipping'] ?? 0;
 		$order->order_email = $request->email;
 		$order->delivery_phone_no = $request->phone_no;
-		$order->order_notes = $request->order_notes;
-		$order->order_items = count(Session::get('cart'));
+		$order->order_notes = $request->order_notes ?? '';
+		$order->order_items = count(array_filter($cart, fn($k) => $k !== 'shipping', ARRAY_FILTER_USE_KEY));
 		$order->order_item_total = $subtotal;
-		$total = $subtotal + (isset($cart['shipping']) ? $cart['shipping'] : 0);
+		$total = $subtotal + ($cart['shipping'] ?? 0);
 		$order->order_total = $total;
-		$order->user_id = $id;
+		$order->user_id = Auth::check() ? Auth::id() : null; // ✅ Authenticated user ID or null for guest
+		$order->shipping_address_id = $address->id;
+		$order->billing_address_id  = $address->id;
+		$order->invoice_number = rand(100000, 999999999999999);
+		$order->order_status = 'pending';
 
-		// Payment processing...
-		if (isset($_POST['payment_method']) && $_POST['payment_method'] == 'paypal') {
-			$order->transaction_id = $_POST['payment_id'];
-			$order->order_status = $_POST['payment_status'];
-			$order->card_token = $_POST['payer_id'];
-		} elseif (isset($_POST['payment_method']) && $_POST['payment_method'] == 'cash') {
-			$order->order_status = "succeeded";
+		// ============================================
+		// PROCESS PAYMENT
+		// ============================================
+		if ($request->payment_method == 'paypal') {
+			$order->transaction_id = $request->payment_id ?? '';
+			$order->order_status = $request->payment_status ?? 'pending';
+			$order->card_token = $request->payer_id ?? '';
+		} elseif ($request->payment_method == 'cash' || $request->payment_method == 'cod') {
+			$order->order_status = 'pending';
+			$order->transaction_id = 'COD-' . time();
 		} else {
+			// Stripe Payment
 			try {
 				$stripeToken = $request->stripeToken;
 
+				// Check if token already used
 				$usedTokens = Session::get('used_stripe_tokens', []);
 				if (in_array($stripeToken, $usedTokens)) {
 					Session::flash('flash_message', 'This payment token has already been used.');
 					Session::flash('alert-class', 'alert-danger');
-					return redirect()->back();
+					return redirect()->back()->withInput();
 				}
 
-				Stripe\Stripe::setApiKey(env('STRIPE_SECRET'));
+				\Stripe\Stripe::setApiKey(env('STRIPE_SECRET'));
 
-				$customer = \Stripe\Customer::create(array(
+				// Create Customer
+				$customer = \Stripe\Customer::create([
 					'email' => $request->email,
-					'name' => $request->first_name,
+					'name' => $request->first_name . ' ' . ($request->last_name ?? ''),
 					'phone' => $request->phone_no,
-					'description' => "Client Created From Website",
+					'description' => "Customer From Website",
 					'source' => $stripeToken,
-				));
+				]);
 
-				$charge = \Stripe\Charge::create(array(
+				// Create Charge
+				$charge = \Stripe\Charge::create([
 					'customer' => $customer->id,
 					'amount' => $total * 100,
 					'currency' => 'USD',
 					'description' => "Payment From Website",
-					'metadata' => array(
+					'metadata' => [
 						"name" => $request->first_name,
 						"email" => $request->email
-					),
-				));
-
-				$usedTokens[] = $stripeToken;
-				Session::put('used_stripe_tokens', $usedTokens);
+					],
+				]);
 
 				$chargeJson = $charge->jsonSerialize();
-				if ($chargeJson['amount_refunded'] == 0 && empty($chargeJson['failure_code']) && $chargeJson['paid'] == 1 && $chargeJson['captured'] == 1) {
+
+				if ($chargeJson['paid'] == 1 && $chargeJson['captured'] == 1 && empty($chargeJson['failure_code'])) {
+					$usedTokens[] = $stripeToken;
+					Session::put('used_stripe_tokens', $usedTokens);
+
 					$order->transaction_id = $chargeJson['balance_transaction'];
-					$order->order_status = $chargeJson['status'];
+					$order->order_status = 'succeeded';
 				} else {
 					Session::flash('flash_message', 'Payment failed. Please try again.');
 					Session::flash('alert-class', 'alert-danger');
-					return redirect()->back();
+					return redirect()->back()->withInput();
 				}
 			} catch (\Exception $e) {
 				Session::flash('flash_message', 'Payment Error: ' . $e->getMessage());
 				Session::flash('alert-class', 'alert-danger');
-				return redirect()->back();
+				return redirect()->back()->withInput();
 			}
 		}
 
-		// Save order
-		$order->invoice_number = rand(0, 999999999999999);
-
+		// ============================================
+		// SAVE ORDER
+		// ============================================
 		if ($order->save()) {
-			// Get the saved order
+			// Get saved order
 			$savedOrder = Orders::orderBy('id', 'desc')->first();
 
-			// Save order products
+			// ============================================
+			// SAVE ORDER PRODUCTS
+			// ============================================
 			foreach ($cart as $key => $value) {
 				if ($key != 'shipping' && isset($value['name']) && $value['name'] != '') {
-					// ============================================
-					// USING OrderProducts MODEL (Capital O, P)
-					// ============================================
 					$order_products = new OrderProducts();
-					$order_products->order_products_product_id = $value['id'];
-					$order_products->user_id = Auth::check() ? Auth::user()->id : null;
+					$order_products->order_products_product_id = $value['id'] ?? 0;
+					$order_products->user_id = Auth::check() ? Auth::id() : null;
 					$order_products->order_products_name = $value['name'];
-					$order_products->order_products_price = $value['baseprice'];
+					$order_products->order_products_price = $value['baseprice'] ?? 0;
 					$order_products->orders_id = $savedOrder->id;
-					$order_products->order_products_qty = $value['qty'];
-					$order_products->mat_language = isset($value['mat_language']) ? $value['mat_language'] : 'Paperback';
-					$order_products->shipping = isset($cart['shipping']) ? $cart['shipping'] : 0;
-					$order_products->order_products_subtotal = $value['baseprice'] * $value['qty'] + (isset($value['variant_price']) ? $value['variant_price'] : 0);
+					$order_products->order_products_qty = $value['qty'] ?? 1;
+					$order_products->mat_language = $value['mat_language'] ?? 'Paperback';
+					$order_products->shipping = $cart['shipping'] ?? 0;
+					$order_products->order_products_subtotal = ($value['baseprice'] ?? 0) * ($value['qty'] ?? 1) + ($value['variant_price'] ?? 0);
 					$order_products->variants = isset($value['variation']) ? json_encode($value['variation']) : null;
 					$order_products->save();
 				}
 			}
 
+			// ============================================
+			// CLEAR CART & SESSION
+			// ============================================
 			Session::forget('cart');
 			Session::forget('used_stripe_tokens');
 
-			Session::flash('message', 'Your Order has been placed Successfully');
+			Session::flash('message', 'Your Order has been placed Successfully!');
 			Session::flash('alert-class', 'alert-success');
-			return redirect('/');
+
+			return redirect('/')->with('success', 'Order placed successfully!');
+		} else {
+			Session::flash('flash_message', 'Something went wrong. Please try again.');
+			Session::flash('alert-class', 'alert-danger');
+			return redirect()->back()->withInput();
 		}
 	}
 
