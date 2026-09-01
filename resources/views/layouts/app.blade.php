@@ -49,6 +49,9 @@
         .select2-tags-input button.select2-selection__choice__remove:hover {
             background-color: #666ee8 !important;
         }
+        .image-privew img {
+            height: 100px;
+        }
     </style>
     @stack('before-css')
     <link href="{{asset('assets/css/custom.css')}}" rel="stylesheet">
