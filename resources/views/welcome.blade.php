@@ -211,8 +211,8 @@
                             </button>
 
                             <!-- View Details -->
-                            <a href="{{ route('book.detail', $product->slug ?? $product->id) }}"
-                                class="view-detail-btn">View Details →</a>
+                            {{-- <a href="{{ route('book.detail', $product->slug ?? $product->id) }}"
+                                class="view-detail-btn">View Details →</a> --}}
                         </div>
                     </article>
                 @empty
@@ -369,7 +369,7 @@
                     </div>
                     <div class="price-row"><span class="price" id="price-${b.id}">${money(fmt.p)}</span></div>
                     <button class="add add-to-cart" data-product-id="${b.id}" data-product-name="${b.title}">Add to cart</button>
-                    <a href="/books/${b.slug}" class="view-detail-btn">View Details &rarr;</a>
+                    
                 </div>
             </article>`;
             }).join('');
