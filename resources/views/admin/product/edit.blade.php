@@ -284,7 +284,7 @@
                                                     <label>Select Category</label>
                                                     <select id="category" class="form-control select2"
                                                         name="category_id[]" required multiple
-                                                        data-selected="{{ old('category_id', $product->category_id) }}">
+                                                        data-selected="{{ is_array(old('category_id')) ? implode(',', old('category_id')) : old('category_id', $product->categories->pluck('id')->implode(',')) }}">
                                                         <option value="">Select Category</option>
                                                     </select>
                                                 </div>
@@ -451,11 +451,16 @@
 
             // 🔹 PRESELECT CATEGORY (Edit / old)
             if (categorySelected) {
-                $.get("{{ route('admin.product.categories.select2') }}", {
-                    id: categorySelected
-                }, function(data) {
-                    let option = new Option(data.text, data.id, true, true);
-                    $('#category').append(option).trigger('change');
+                let selectedIds = String(categorySelected).split(',');
+                selectedIds.forEach(function(catId) {
+                    if (catId) {
+                        $.get("{{ route('admin.product.categories.select2') }}", {
+                            id: catId
+                        }, function(data) {
+                            let option = new Option(data.text, data.id, true, true);
+                            $('#category').append(option).trigger('change');
+                        });
+                    }
                 });
             }
 

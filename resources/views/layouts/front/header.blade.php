@@ -1,6 +1,9 @@
 <header>
     <div class="wrap bar">
-        <a href="{{ route('home') }}#top" class="mark">Alfred Lambremont Webre<span>JD &middot; MEd</span></a>
+        <a href="{{ route('home') }}#top" class="mark">
+            Alfred Lambremont Webre
+            <span>JD &middot; MEd</span>
+        </a>
         <button class="menu-toggle" id="menuToggle" aria-expanded="false">Menu</button>
         <nav class="main" id="nav">
             <a href="{{ route('home') }}">Home</a>

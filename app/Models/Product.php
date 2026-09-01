@@ -49,6 +49,18 @@ class Product extends Model
         return $this->belongsTo(Category::class);
     }
 
+    public function getCategoriesAttribute()
+    {
+        if (!$this->category_id) {
+            return collect();
+        }
+        $ids = array_filter(explode(',', $this->category_id));
+        if (empty($ids)) {
+            return collect();
+        }
+        return Category::whereIn('id', $ids)->get();
+    }
+
     public function subCategory()
     {
         return $this->belongsTo(SubCategory::class);

@@ -3,7 +3,11 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\inquiry;
+use App\Mail\AdminInquiryMail;
+use App\Mail\UserInquiryConfirmationMail;
+use App\Mail\NewsletterAdminMail;
+use App\Mail\NewsletterUserMail;
+use App\Models\Inquiry;
 use App\schedule;
 use App\newsletter;
 use App\post;
@@ -17,25 +21,20 @@ use Session;
 use App\Http\Helpers\UserSystemInfoHelper;
 use App\Http\Traits\HelperTrait;
 use App\Models\Banner as ModelsBanner;
+use App\Models\Product;
+use App\Models\ProductImage;
 use Auth;
 use App\Profile;
 use App\Page;
 use Image;
+use App\Models\Category;
 
 class HomeController extends Controller
 {
     use HelperTrait;
-    /**
-     * Create a new controller instance.
-     *
-     * @return void
-     */
-    // use Helper;
 
     public function __construct()
     {
-        //$this->middleware('auth');
-
         $logo = imagetable::select('img_path')
             ->where('table_name', '=', 'logo')
             ->first();
@@ -48,16 +47,30 @@ class HomeController extends Controller
         View()->share('favicon', $favicon);
     }
 
-    /**
-     * Show the application dashboard.
-     *
-     * @return \Illuminate\Http\Response
-     */
+
     public function index()
     {
         $banner = DB::table('banners')->where('status', 1)->first();
-        $testinomial = DB::class::table('testimonial')->where('status', 1)->get();
-        return view('index', compact('banner', 'testinomial'));
+        $testinomial = DB::table('testimonial')->where('status', 1)->get();
+
+        // Sare products load karo taake filter tabs sahi kaam karein
+        $products = Product::with('primaryImage')
+            ->where('status', 1)
+            ->orderByDesc('id')
+            ->get();
+
+        $latestProduct = Product::with('primaryImage')
+            ->where('status', 1)
+            ->orderByDesc('id')
+            ->first();
+
+        $categories = DB::table('category')->where('status', 1)->get();
+        $page = DB::table('pages')->where('id', '1')->first();
+        $section = DB::table('sections')->where('page_id', '1')->get();
+
+
+
+        return view('welcome', compact('banner', 'testinomial', 'products', 'categories', 'latestProduct', 'page', 'section'));
     }
 
     public function about()
@@ -65,28 +78,55 @@ class HomeController extends Controller
         return view('about');
     }
 
-    // public function blog()
-    // {
-    //     $blogs = Blog::latest()->get();
-
-    //     return view('blog', compact('blogs'));
-    // }
     public function blogDetail($id)
     {
         $blog = DB::class::table('blog')->where('id', $id)->first();
-// dd($blog);
-        // $recentBlogs = Blog::where('id', '!=', $blog->id)
-        //     ->latest()
-        //     ->take(5)
-        //     ->get();
-
         return view('blog', compact('blog'));
     }
 
     public function books()
     {
-        return view('books');
+        $categories = DB::table('category')->where('status', 1)->get();
+
+        $products = Product::with('primaryImage')
+            ->where('status', 1)
+            ->orderByDesc('id')
+            ->get();
+
+        return view('books', compact('products', 'categories'));
     }
+
+    public function bookDetail($slug)
+    {
+        $product = Product::with('primaryImage', 'galleryImages')
+            ->where('slug', $slug)
+            ->where('status', 1)
+            ->firstOrFail();
+
+        $formats = [];
+        if ($product->paperback_price && $product->paperback_price > 0) {
+            $formats[] = ['f' => 'Paperback', 'p' => (float) $product->paperback_price];
+        }
+        if ($product->ebook_price && $product->ebook_price > 0) {
+            $formats[] = ['f' => 'eBook', 'p' => (float) $product->ebook_price];
+        }
+        if ($product->rustica_price && $product->rustica_price > 0) {
+            $formats[] = ['f' => 'Rústica', 'p' => (float) $product->rustica_price];
+        }
+        if ($product->taschenbuch_price && $product->taschenbuch_price > 0) {
+            $formats[] = ['f' => 'Taschenbuch', 'p' => (float) $product->taschenbuch_price];
+        }
+        if (empty($formats)) {
+            $formats[] = ['f' => 'Paperback', 'p' => 0];
+        }
+
+        return view('books-detail', compact('product', 'formats'));
+    }
+
+
+    // ============================================
+    // OTHER FUNCTIONS
+    // ============================================
 
     public function bulkAndCourseOrders()
     {
@@ -101,7 +141,6 @@ class HomeController extends Controller
     public function exopolitics()
     {
         $blogs = DB::table('blog')->where('status', 1)->orderByDesc('id')->get();
-
         return view('exopolitics', compact('blogs'));
     }
 
@@ -120,31 +159,44 @@ class HomeController extends Controller
         return view('shipping-and-delivery');
     }
 
-
-
-
     public function careerSubmit(Request $request)
     {
-
-
         inquiry::create($request->all());
-
-
         return response()->json(['message' => 'Thank you for contacting us. We will get back to you asap', 'status' => true]);
-        return back();
     }
 
     public function newsletterSubmit(Request $request)
     {
+        $request->validate([
+            'newsletter_email' => 'required|email',
+        ]);
 
-        $is_email = newsletter::where('newsletter_email', $request->newsletter_email)->count();
+        $email = trim($request->newsletter_email);
+        $is_email = \App\Models\Newsletter::where('newsletter_email', $email)->count();
         if ($is_email == 0) {
-            $inquiry = new newsletter;
-            $inquiry->newsletter_email = $request->newsletter_email;
-            $inquiry->save();
-            return response()->json(['message' => 'Thank you for contacting us. We will get back to you asap', 'status' => true]);
+            $newsletter = new \App\Models\Newsletter;
+            $newsletter->newsletter_email = $email;
+            $newsletter->save();
+
+            $adminEmail = config('mail.admin_email') ?: (config('mail.from.address') ?: 'admin@alfredlambremontwebre.com');
+
+            // Send confirmation email to subscriber
+            try {
+                Mail::to($email)->send(new NewsletterUserMail($email));
+            } catch (\Exception $e) {
+                \Log::error('Newsletter User Mail Error: ' . $e->getMessage());
+            }
+
+            // Send notification email to admin
+            try {
+                Mail::to($adminEmail)->send(new NewsletterAdminMail($email));
+            } catch (\Exception $e) {
+                \Log::error('Newsletter Admin Mail Error: ' . $e->getMessage());
+            }
+
+            return response()->json(['message' => 'Thank you! You have been subscribed successfully.', 'status' => true]);
         } else {
-            return response()->json(['message' => 'Email already exists', 'status' => false]);
+            return response()->json(['message' => 'This email is already subscribed.', 'status' => false]);
         }
     }
 
@@ -157,7 +209,6 @@ class HomeController extends Controller
             $update = DB::table('pages')
                 ->where('id', $id)
                 ->update(array('content' => $htmlContent));
-
             if ($update) {
                 return response()->json(['message' => 'Content Updated Successfully', 'status' => true]);
             } else {
@@ -173,5 +224,40 @@ class HomeController extends Controller
                 return response()->json(['message' => 'Error Occurred', 'status' => false]);
             }
         }
+    }
+
+    public function store(Request $request)
+    {
+        $request->validate([
+            'fname' => 'required|string|max:255',
+            'email' => 'required|email|max:255',
+            'notes' => 'required|string',
+        ]);
+
+        $inquiry = Inquiry::create([
+            'form_name' => 'Contact',
+            'fname' => $request->fname,
+            'email' => $request->email,
+            'notes' => $request->notes,
+        ]);
+
+        $adminEmail = config('mail.admin_email') ?: config('mail.from.address');
+
+        try {
+            if ($adminEmail) {
+                Mail::to($adminEmail)->send(new AdminInquiryMail($inquiry));
+            }
+        } catch (\Throwable $e) {
+            \Log::error('Contact Admin Mail Error: ' . $e->getMessage());
+        }
+
+        try {
+            Mail::to($inquiry->email)->send(new UserInquiryConfirmationMail($inquiry));
+        } catch (\Throwable $e) {
+            \Log::error('Contact User Mail Error: ' . $e->getMessage());
+        }
+
+        // Yeh change karein - 'message' ki jagah 'success' use karein
+        return back()->with('success', 'Thank you! Your message has been sent successfully.');
     }
 }

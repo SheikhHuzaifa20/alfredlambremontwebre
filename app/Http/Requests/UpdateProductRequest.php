@@ -14,8 +14,8 @@ class UpdateProductRequest extends FormRequest
     public function rules()
     {
         return [
-            // BASIC PRODUCT FIELDS
-            'category_id'       => 'required|exists:category,id',
+            'category_id'       => 'required|array',
+            'category_id.*'     => 'exists:category,id',
             'sub_category_id'   => 'nullable|exists:sub_category,id',
 
             'name'              => 'required|string|max:255',

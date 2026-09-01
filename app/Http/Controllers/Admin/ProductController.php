@@ -48,7 +48,7 @@ class ProductController extends Controller
             ]);
         }
 
-        if( $request->filled('featured') ) {
+        if ($request->filled('featured')) {
             $products->where('is_featured', $request->featured);
         }
 
@@ -61,18 +61,23 @@ class ProductController extends Controller
         }
 
         return datatables()->of($products)
-            ->addColumn('category', fn ($row) => $row->category->name ?? '-')
-            ->addColumn('sub_category', fn ($row) => $row->subCategory->name ?? '-')
-            ->addColumn('paperback_price', fn ($row) => $row->paperback_price ?? '-')
-            ->addColumn('ebook_price', fn ($row) => $row->ebook_price ?? '-')
-            ->addColumn('rustica_price', fn ($row) => $row->rustica_price ?? '-')
-            ->addColumn('taschenbuch_price', fn ($row) => $row->taschenbuch_price ?? '-')
+            ->addColumn('category', function ($row) {
+                if (!$row->category_id) return '-';
+                $ids = array_filter(explode(',', $row->category_id));
+                if (empty($ids)) return '-';
+                return Category::whereIn('id', $ids)->pluck('name')->implode(', ');
+            })
+            ->addColumn('sub_category', fn($row) => $row->subCategory->name ?? '-')
+            ->addColumn('paperback_price', fn($row) => $row->paperback_price ?? '-')
+            ->addColumn('ebook_price', fn($row) => $row->ebook_price ?? '-')
+            ->addColumn('rustica_price', fn($row) => $row->rustica_price ?? '-')
+            ->addColumn('taschenbuch_price', fn($row) => $row->taschenbuch_price ?? '-')
             ->addColumn('image', function ($row) {
                 $image = $row->primaryImage && $row->primaryImage->image_path
                     ? asset($row->primaryImage->image_path)
                     : asset('images/noimage.png'); // fallback image
 
-                return '<img src="'.$image.'" width="120">';
+                return '<img src="' . $image . '" width="120">';
             })
             ->addColumn('status', function ($row) {
                 $checked = $row->status ? 'checked' : '';
@@ -129,42 +134,31 @@ class ProductController extends Controller
     /**
      * STORE PRODUCT
      */
-    public function store(StoreProductRequest $request)
+    public function store(Request $request)
     {
+        $request->validate([
+            'name'         => 'required|string|max:255',
+            'description'  => 'nullable|string',
+            'category_ids' => 'nullable|array',
+            'category_ids.*' => 'exists:categories,id',
+            'image'        => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+        ]);
+
         DB::beginTransaction();
 
         try {
-            $data = $request->validated();
-            $data['text2'] = $request->text2;
-            // $data['short_text'] = $request->short_text;
-            $data['paperback_price'] = $request->paperback_price;
-            $data['ebook_price'] = $request->ebook_price;
-            $data['rustica_price'] = $request->rustica_price;
-            $data['taschenbuch_price'] = $request->taschenbuch_price;
 
-            // Generate slug
-            if($request->slug){
-                $data['slug'] = Str::slug($request->slug);
-            } else {
-                $data['slug'] = Str::slug($data['name']);
-            }
-            $data['created_by'] = auth()->id();
+            $product = Product::create([
+                'name'         => $request->name,
+                'description'  => $request->description,
+                'category_ids' => $request->category_ids ?? [],
+                'slug'         => Str::slug($request->name),
+                'created_by'   => auth()->id(),
+            ]);
 
-            //is_charge_tax default value
-            $data['is_charge_tax'] = $request->is_charge_tax == "on" ? 1 : 0;
-
-            //stock default value
-            $data['stock'] = $request->stock == "on" ? 1 : 0;
-
-            // -------------------------
-            // CREATE PRODUCT
-            $product = Product::create($data);
-
-            // -------------------------
-            // SAVE PRIMARY IMAGE
-            // -------------------------
             if ($request->hasFile('image')) {
-                $primaryImagePath = $this->uploadFile(
+
+                $imagePath = $this->uploadFile(
                     $request->file('image'),
                     'uploads/products/',
                     'product'
@@ -172,109 +166,22 @@ class ProductController extends Controller
 
                 ProductImage::create([
                     'product_id' => $product->id,
-                    'image_path' => $primaryImagePath,
+                    'image_path' => $imagePath,
                     'is_primary' => 1,
                 ]);
             }
 
-            // -------------------------
-            // SAVE GALLERY IMAGES
-            // -------------------------
-            if ($request->hasFile('images')) {
-                foreach ($request->file('images') as $galleryFile) {
-                    $galleryPath = $this->uploadFile(
-                        $galleryFile,
-                        'uploads/products/',
-                        'gallery'
-                    );
-
-                    ProductImage::create([
-                        'product_id' => $product->id,
-                        'image_path' => $galleryPath,
-                        'is_primary' => 0,
-                    ]);
-                }
-            }
-
-            // -------------------------
-            // FALLBACK: MAKE FIRST IMAGE PRIMARY
-            // -------------------------
-            if (!$product->images()->where('is_primary', 1)->exists()) {
-                $firstImage = $product->images()->first();
-                if ($firstImage) {
-                    $firstImage->update(['is_primary' => 1]);
-                }
-            }
-
-            // -------------------------
-            // SAVE SIMPLE PRODUCT ATTRIBUTES
-            // -------------------------
-            if ($request->has('product_attributes')) {
-                foreach ($request->product_attributes as $attr) {
-                    ProductAttribute::create([
-                        'product_id'   => $product->id,
-                        'attribute_id' => $attr['attribute_id'],
-                        'value'        => $attr['value'],
-                        'price'        => $attr['price'] ?? 0,
-                        'qty'          => $attr['qty'] ?? 0,
-                    ]);
-                }
-            }
-
-            // -------------------------
-            // SAVE PRODUCT VARIANTS
-            // -------------------------
-            if ($request->has('variants')) {
-                foreach ($request->variants as $variant) {
-                    $product->variants()->create([
-                        'attributes' => json_encode($variant['attributes']),
-                        'sku'        => $variant['sku'] ?? null,
-                        'price'      => $variant['price'] ?? 0,
-                        'stock'      => $variant['stock'] ?? 0,
-                        'status'     => 1,
-                    ]);
-                }
-            }
-
-            $newData = [
-                'product' => $product->toArray(),
-
-                'images' => $product->images()
-                    ->get()
-                    ->toArray(),
-
-                'attributes' => $product->attributes()
-                    ->get()
-                    ->toArray(),
-
-                'attribute_values' => $product->attributes()
-                    ->with('attribute.values')
-                    ->get()
-                    ->pluck('attribute.values')
-                    ->flatten(1)
-                    ->toArray(),
-            ];
-
-            // -------------------------
-            // LOG ACTIVITY
-            // -------------------------
-            log_activity(
-                'create',
-                Product::class,
-                $product->id,
-                'Created new product: ' . $product->name,
-                ['newData' => $newData]
-            );
-
             DB::commit();
 
-            return redirect()
-                ->route('admin.product.index')
+            return redirect()->back()
                 ->with('message', 'Product added successfully!');
-
         } catch (\Exception $e) {
+
             DB::rollBack();
-            return redirect()->back()->with('error', $e->getMessage());
+
+            return redirect()->back()
+                ->with('error', $e->getMessage())
+                ->withInput();
         }
     }
 
@@ -297,59 +204,47 @@ class ProductController extends Controller
     /**
      * UPDATE PRODUCT
      */
-    public function update(UpdateProductRequest $request, Product $product)
+    public function update(Request $request, Product $product)
     {
+        $request->validate([
+            'name'           => 'required|string|max:255',
+            'description'    => 'nullable|string',
+            'category_ids'   => 'nullable|array',
+            'category_ids.*' => 'exists:categories,id',
+            'image'          => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+        ]);
+
         DB::beginTransaction();
 
         try {
-            // Old Data
-            $oldData = [
-                'product' => $product->toArray(),
 
-                'images' => $product->images()
-                    ->get()
-                    ->toArray(),
+            $product->update([
+                'name'         => $request->name,
+                'description'  => $request->description,
+                'category_ids' => $request->category_ids ?? [],
+                'slug'         => Str::slug($request->name),
+                'updated_by'   => auth()->id(),
+            ]);
 
-                'attributes' => $product->attributes()
-                    ->get()
-                    ->toArray(),
-
-                'attribute_values' => $product->attributes()
-                    ->with('attribute.values')
-                    ->get()
-                    ->pluck('attribute.values')
-                    ->flatten(1)
-                    ->toArray(),
-            ];
-
-            $data = $request->validated();
-
-            // Manually assign fields
-            $data['paperback_price'] = $request->paperback_price;
-            $data['ebook_price'] = $request->ebook_price;
-            $data['rustica_price'] = $request->rustica_price;
-            $data['taschenbuch_price'] = $request->taschenbuch_price;
-            $data['text2'] = $request->text2;
-            // $data['short_text'] = $request->short_text;
-
-            // Generate slug
-            $data['slug'] = $request->slug ?? \Illuminate\Support\Str::slug($data['name']);
-            $data['updated_by'] = auth()->id();
-
-            // Checkbox fields
-            $data['is_charge_tax'] = $request->is_charge_tax == "on" ? 1 : 0;
-            $data['stock'] = $request->stock == "on" ? 1 : 0;
-
-            // Update product
-            $product->update($data);
-
-            // -------------------------
-            // UPDATE PRIMARY IMAGE
             if ($request->hasFile('image')) {
-                // Delete old primary image if exists
-                $product->images()->where('is_primary', 1)->delete();
 
-                $primaryImagePath = $this->uploadFile(
+                $oldImage = ProductImage::where('product_id', $product->id)
+                    ->where('is_primary', 1)
+                    ->first();
+
+                if ($oldImage) {
+
+                    if (
+                        $oldImage->image_path &&
+                        file_exists(public_path($oldImage->image_path))
+                    ) {
+                        unlink(public_path($oldImage->image_path));
+                    }
+
+                    $oldImage->delete();
+                }
+
+                $imagePath = $this->uploadFile(
                     $request->file('image'),
                     'uploads/products/',
                     'product'
@@ -357,117 +252,22 @@ class ProductController extends Controller
 
                 ProductImage::create([
                     'product_id' => $product->id,
-                    'image_path' => $primaryImagePath,
+                    'image_path' => $imagePath,
                     'is_primary' => 1,
                 ]);
             }
 
-            // -------------------------
-            // UPDATE GALLERY IMAGES
-            if ($request->hasFile('images')) {
-                foreach ($request->file('images') as $galleryFile) {
-                    $galleryPath = $this->uploadFile(
-                        $galleryFile,
-                        'uploads/products/',
-                        'gallery'
-                    );
-
-                    ProductImage::create([
-                        'product_id' => $product->id,
-                        'image_path' => $galleryPath,
-                        'is_primary' => 0,
-                    ]);
-                }
-            }
-
-            // -------------------------
-            // UPDATE PRODUCT ATTRIBUTES
-            if ($request->has('product_attributes')) {
-                // Delete existing attributes
-                $product->attributes()->delete();
-
-                foreach ($request->product_attributes as $attr) {
-                    ProductAttribute::create([
-                        'product_id'   => $product->id,
-                        'attribute_id' => $attr['attribute_id'],
-                        'value'        => $attr['value'],
-                        'price'        => $attr['price'] ?? 0,
-                        'qty'          => $attr['qty'] ?? 0,
-                    ]);
-                }
-            }
-
-            // -------------------------
-            // UPDATE PRODUCT VARIANTS
-            if ($request->has('variants')) {
-                foreach ($request->variants as $variantData) {
-                    if (!empty($variantData['id'])) {
-                        // Update existing variant
-                        $variant = $product->variants()->find($variantData['id']);
-                        if ($variant) {
-                            $variant->update([
-                                'attributes' => json_encode($variantData['attributes']),
-                                'sku'        => $variantData['sku'] ?? null,
-                                'price'      => $variantData['price'] ?? 0,
-                                'stock'      => $variantData['stock'] ?? 0,
-                            ]);
-                        }
-                    } else {
-                        // Create new variant
-                        $product->variants()->create([
-                            'attributes' => json_encode($variantData['attributes']),
-                            'sku'        => $variantData['sku'] ?? null,
-                            'price'      => $variantData['price'] ?? 0,
-                            'stock'      => $variantData['stock'] ?? 0,
-                            'status'     => 1,
-                        ]);
-                    }
-                }
-            }
-
-            $product->refresh();
-
-            $newData = [
-                'product' => $product->toArray(),
-
-                'images' => $product->images()
-                    ->get()
-                    ->toArray(),
-
-                'attributes' => $product->attributes()
-                    ->get()
-                    ->toArray(),
-
-                'attribute_values' => $product->attributes()
-                    ->with('attribute.values')
-                    ->get()
-                    ->pluck('attribute.values')
-                    ->flatten(1)
-                    ->toArray(),
-            ];
-
-            // -------------------------
-            // LOG ACTIVITY
-            log_activity(
-                'update',
-                Product::class,
-                $product->id,
-                'Updated product: ' . $product->name,
-                [
-                    'before' => $oldData,
-                    'after'  => $newData,
-                ]
-            );
-
             DB::commit();
 
-            return redirect()
-                ->route('admin.product.edit', $product)
+            return redirect()->back()
                 ->with('message', 'Product updated successfully!');
-
         } catch (\Exception $e) {
+
             DB::rollBack();
-            return redirect()->back()->with('error', $e->getMessage());
+
+            return redirect()->back()
+                ->with('error', $e->getMessage())
+                ->withInput();
         }
     }
 
@@ -492,7 +292,10 @@ class ProductController extends Controller
         $product->status = !$old;
         $product->save();
 
-        log_activity('status_toggle', Product::class, $product->id,
+        log_activity(
+            'status_toggle',
+            Product::class,
+            $product->id,
             'Toggled product status for ' . $product->name . ' from ' . ($old ? 'Active' : 'Inactive') . ' to ' . ($product->status ? 'Active' : 'Inactive')
         );
 
@@ -511,7 +314,10 @@ class ProductController extends Controller
         $product->is_featured = !$old;
         $product->save();
 
-        log_activity('is_featured_toggle', Product::class, $product->id,
+        log_activity(
+            'is_featured_toggle',
+            Product::class,
+            $product->id,
             'Toggled product ' . $product->name . ' from ' . ($old ? 'Featured' : 'Not Featured') . ' to ' . ($product->is_featured ? 'Featured' : 'Not Featured'),
         );
 
@@ -537,19 +343,19 @@ class ProductController extends Controller
         $products = Product::with('category', 'subCategory', 'primaryImage')->onlyTrashed()->get();
 
         return datatables()->of($products)
-            ->addColumn('category', fn ($row) => $row->category->name ?? '-')
-            ->addColumn('sub_category', fn ($row) => $row->subCategory->name ?? '-')
+            ->addColumn('category', fn($row) => $row->category->name ?? '-')
+            ->addColumn('sub_category', fn($row) => $row->subCategory->name ?? '-')
             ->addColumn('image', function ($row) {
                 $image = $row->primaryImage && $row->primaryImage->image_path
                     ? asset($row->primaryImage->image_path)
                     : asset('images/noimage.png'); // fallback image
 
-                return '<img src="'.$image.'" width="120">';
+                return '<img src="' . $image . '" width="120">';
             })
             ->addColumn('action', function ($row) {
                 return '
-                    <button class="btn btn-sm btn-success restoreProduct" data-id="'.$row->id.'">Restore</button>
-                    <button class="btn btn-sm btn-danger forceDeleteProduct" data-id="'.$row->id.'">Delete Permanently</button>
+                    <button class="btn btn-sm btn-success restoreProduct" data-id="' . $row->id . '">Restore</button>
+                    <button class="btn btn-sm btn-danger forceDeleteProduct" data-id="' . $row->id . '">Delete Permanently</button>
                 ';
             })
             ->rawColumns(['action', 'image'])
@@ -681,7 +487,7 @@ class ProductController extends Controller
         $data = $query->paginate(10);
 
         return response()->json([
-            'results' => $data->map(fn ($c) => ['id' => $c->id, 'text' => $c->name]),
+            'results' => $data->map(fn($c) => ['id' => $c->id, 'text' => $c->name]),
             'pagination' => ['more' => $data->hasMorePages()]
         ]);
     }
@@ -702,7 +508,7 @@ class ProductController extends Controller
         $data = $query->paginate(10);
 
         return response()->json([
-            'results' => $data->map(fn ($s) => ['id' => $s->id, 'text' => $s->name]),
+            'results' => $data->map(fn($s) => ['id' => $s->id, 'text' => $s->name]),
             'pagination' => ['more' => $data->hasMorePages()]
         ]);
     }

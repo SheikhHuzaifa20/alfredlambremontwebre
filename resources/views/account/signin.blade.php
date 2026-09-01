@@ -1,120 +1,590 @@
-@section('title','Register')
 @extends('layouts.main')
-@section('css')
-<style>
-    .form-container.sign-in-container.col-md-6 {margin: 0 auto;}
-</style>
-@endsection
-@section('content')
-<section class="banner">
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-12">
-                <div class="banner-wrapper inner-banner-wrapper">
-                    <div class="row justify-content-center">
-                        <div class="col-lg-10">
-                            <div class="section-heading text-center">
-                                <h1>My Account</h1>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-<section class="account">
-    <div class="container" id="from-wrapper">
-        {{-- <div class="form-container sign-up-container">
-            <form  method="POST" action="{{ route('register') }}">
-                @csrf
-                <h1>Sign Up</h1>
-                <div class="form-group">
-                    <label>Username*</label>
-                    <input type="text" class="form-control {{ $errors->registerForm->has('name') ? ' is-invalid' : '' }}" name="name" id="name"required>
-                    @if ($errors->registerForm->has('name'))
-                    <small class="alert alert-danger w-100 d-block p-2 mt-2">{{ $errors->registerForm->registerForm->first('name') }}</small>
-                    @endif
-                </div>
-                <div class="form-group">
-                    <label>Email Address*</label>
-                    <input type="email" class="form-control {{ $errors->registerForm->has('email') ? ' is-invalid' : '' }}" name="email" id="signup-email" required>
-                    @if ($errors->registerForm->has('email'))
-                    <small class="alert alert-danger w-100 d-block p-2 mt-2">{{ $errors->registerForm->first('email') }}</small>
-                    @endif
-                </div>
-                <div class="form-group">
-                    <label>Phone*</label>
-                    <input type="text" class="form-control {{ $errors->registerForm->has('phone') ? ' is-invalid' : '' }}" id="phone" name="phone" required>
-                    @if ($errors->registerForm->has('phone'))
-                    <small class="alert alert-danger w-100 d-block p-2 mt-2">{{ $errors->registerForm->first('phone') }}</small>
-                    @endif
-                </div>
-                <div class="form-group">
-                    <label>Address*</label>
-                    <input type="text" class="form-control {{ $errors->registerForm->has('address') ? ' is-invalid' : '' }}" name="address" id="address" required>
-                    @if ($errors->registerForm->has('address'))
-                    <small class="alert alert-danger w-100 d-block p-2 mt-2">{{ $errors->registerForm->first('address') }}</small>
-                    @endif
-                </div>
-                <div class="form-group">
-                    <label>Password*</label>
-                    <input type="password" class="form-control {{ $errors->registerForm->has('password') ? ' is-invalid' : '' }}" name="password" id="signup-password" required>
-                    @if ($errors->registerForm->has('password'))
-                    <small class="alert alert-danger w-100 d-block p-2 mt-2">{{ $errors->registerForm->first('password') }}</small>
-                    @endif
-                </div>
-                <div class="form-group">
-                    <label>Confirm Password*</label>
-                    <input type="password" class="form-control" name="password_confirmation" id="signup-password" required>
-                    @if ($errors->registerForm->has('password_confirmation'))
-                    <small class="alert alert-danger w-100 d-block p-2 mt-2">{{ $errors->registerForm->first('password_confirmation') }}</small>
-                    @endif
-                </div>
-                <button class="btn btn-yellow" type="submit">Sign Up</button>
-            </form>
-        </div> --}}
-        <div class="form-container sign-in-container col-md-6">
-            <form method="POST" action="{{ route('login') }}">
-                @csrf
-                <h1>Login</h1>
-                <div class="form-group ">
-                    <label>Username or email address*</label>
-                    <input type="email" class="form-control {{ $errors->has('email') ? ' is-invalid' : '' }}" name="email" value="{{ old('email') }}" required>
-                    @if ($errors->has('email'))
-                    <small class="alert alert-danger w-100 d-block p-2 mt-2">{{ $errors->first('email') }}</small>
-                    @endif
-                </div>
-                <div class="form-group">
-                    <label>Password*</label>
-                    <input type="password" class="form-control {{ $errors->has('password') ? ' is-invalid' : '' }}" name="password">
-                    @if ($errors->has('password'))
-                    <small class="alert alert-danger w-100 d-block p-2 mt-2">{{ $errors->first('password') }}</small>
-                    @endif
-                </div>
-                <div class="form-group">
-                    <label class="remember"><input type="checkbox"> Remember me </label>
-                    <a href="{{ url('password/reset') }}" class="pull-right forg_text"> Forgot password? </a>
-                </div>
-                <button class="btn btn-yellow" type="submit">Login</button>
-                <!-- <span>or</span>
-                <div class="social-group">
-                    <button class="loginBtn loginBtn--facebook">Login with Facebook</button>
-                    <button class="loginBtn loginBtn--google">Login with Google</button>
-                </div> -->
-            </form>
-        </div>
 
-    </div>
-</section>
+@section('title', 'Login')
+
+@section('content')
+
+    <section class="auth-page">
+        <div class="container">
+
+            <div class="auth-wrapper">
+
+                <div class="auth-card">
+
+                    <div class="auth-header">
+                        <span class="auth-eyebrow">WELCOME BACK</span>
+
+                        <h1>Login</h1>
+
+                        <p>
+                            Sign in to access your account and manage your information.
+                        </p>
+                    </div>
+
+
+                    <form method="POST" action="{{ route('login') }}" class="auth-form">
+
+                        @csrf
+
+
+                        {{-- Email --}}
+                        <div class="auth-group">
+
+                            <label for="email">
+                                Email Address
+                            </label>
+
+                            <input type="email" id="email" name="email" value="{{ old('email') }}"
+                                placeholder="Enter your email address" class="@error('email') auth-input-error @enderror"
+                                required autofocus>
+
+                            @error('email')
+                                <div class="auth-error">
+                                    {{ $message }}
+                                </div>
+                            @enderror
+
+                        </div>
+
+
+                        {{-- Password --}}
+                        <div class="auth-group">
+
+                            <label for="password">
+                                Password
+                            </label>
+
+                            <input type="password" id="password" name="password" placeholder="Enter your password"
+                                class="@error('password') auth-input-error @enderror" required>
+
+                            @error('password')
+                                <div class="auth-error">
+                                    {{ $message }}
+                                </div>
+                            @enderror
+
+                        </div>
+
+
+                        {{-- Remember + Forgot --}}
+                        <div class="auth-options">
+
+                            <label class="remember-me">
+
+                                <input type="checkbox" name="remember">
+
+                                <span>
+                                    Remember me
+                                </span>
+
+                            </label>
+
+
+                            {{-- <a href="{{ url('password/reset') }}" class="forgot-password">
+
+                                Forgot password?
+
+                            </a> --}}
+
+                        </div>
+
+
+                        <button type="submit" class="auth-btn">
+
+                            Login
+
+                        </button>
+
+                    </form>
+
+
+                    <div class="auth-divider">
+                        <span></span>
+                        <p>Don't have an account?</p>
+                        <span></span>
+                    </div>
+
+
+                    <div class="auth-footer">
+
+                        <a href="{{ route('signup') }}">
+
+                            Create an account
+
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+    </section>
+
 @endsection
-@section('js')
-<script>
-    $("#phone").on("keypress keyup blur",function (event) {
-       $(this).val($(this).val().replace(/[^\d].+/, ""));
-        if ((event.which < 48 || event.which > 57)) {
-            event.preventDefault();
-        }
-    });
-</script>
+@section('css')
+
+<style>
+
+/* =========================================================
+   ACCOUNT PAGES
+========================================================= */
+
+.auth-page {
+    background: #10172c;
+    min-height: calc(100vh - 120px);
+    padding: 90px 20px;
+    position: relative;
+}
+
+
+/* Center wrapper */
+
+.auth-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+
+/* Main Card */
+
+.auth-card {
+    width: 100%;
+    max-width: 560px;
+
+    background: #141c32;
+
+    border: 1px solid rgba(190, 157, 76, 0.35);
+
+    padding: 55px 50px;
+
+    position: relative;
+
+    box-shadow:
+        0 25px 70px rgba(0, 0, 0, 0.35);
+}
+
+
+/* Gold top line */
+
+.auth-card::before {
+
+    content: "";
+
+    position: absolute;
+
+    top: 0;
+    left: 50%;
+
+    transform: translateX(-50%);
+
+    width: 80px;
+    height: 2px;
+
+    background: #b89a55;
+
+}
+
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+.auth-header {
+
+    text-align: center;
+
+    margin-bottom: 40px;
+
+}
+
+
+.auth-eyebrow {
+
+    display: block;
+
+    color: #b89a55;
+
+    font-size: 11px;
+
+    letter-spacing: 3px;
+
+    font-weight: 600;
+
+    margin-bottom: 15px;
+
+}
+
+
+.auth-header h1 {
+
+    color: #e7e2d7 !important;
+
+    font-size: 46px !important;
+
+    line-height: 1.2 !important;
+
+    font-weight: 400 !important;
+
+    margin: 0 0 15px !important;
+
+    letter-spacing: -1px;
+
+}
+
+
+.auth-header p {
+
+    color: #aaa9ad;
+
+    font-size: 15px;
+
+    line-height: 1.7;
+
+    margin: 0 auto;
+
+    max-width: 390px;
+
+}
+
+
+/* =========================================================
+   FORM
+========================================================= */
+
+.auth-form {
+
+    width: 100%;
+
+}
+
+
+.auth-group {
+
+    margin-bottom: 22px;
+
+}
+
+
+.auth-group label {
+
+    display: block;
+
+    color: #d7d2c7;
+
+    font-size: 12px;
+
+    letter-spacing: 1.3px;
+
+    text-transform: uppercase;
+
+    margin-bottom: 10px;
+
+}
+
+
+/* Inputs */
+
+.auth-group input {
+
+    width: 100% !important;
+
+    height: 54px !important;
+
+    padding: 0 18px !important;
+
+    background: #0e1528 !important;
+
+    border: 1px solid #30384b !important;
+
+    border-radius: 0 !important;
+
+    color: #ffffff !important;
+
+    font-size: 14px !important;
+
+    font-family: inherit !important;
+
+    box-shadow: none !important;
+
+    transition: all 0.3s ease;
+
+}
+
+
+.auth-group input::placeholder {
+
+    color: #697084;
+
+    opacity: 1;
+
+}
+
+
+/* Input Focus */
+
+.auth-group input:focus {
+
+    outline: none !important;
+
+    border-color: #b89a55 !important;
+
+    box-shadow:
+        0 0 0 3px rgba(184, 154, 85, 0.08) !important;
+
+}
+
+
+/* Validation */
+
+.auth-input-error {
+
+    border-color: #d86c6c !important;
+
+}
+
+
+.auth-error {
+
+    color: #e68181;
+
+    font-size: 12px;
+
+    margin-top: 8px;
+
+}
+
+
+/* =========================================================
+   REMEMBER + FORGOT
+========================================================= */
+
+.auth-options {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    margin: 5px 0 28px;
+
+}
+
+
+.remember-me {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    color: #bcb9b2;
+
+    font-size: 13px;
+
+    cursor: pointer;
+
+    margin: 0;
+
+}
+
+
+.remember-me input {
+
+    width: 15px !important;
+
+    height: 15px !important;
+
+    accent-color: #b89a55;
+
+}
+
+
+.forgot-password {
+
+    color: #b89a55;
+
+    font-size: 13px;
+
+    text-decoration: none;
+
+    transition: 0.3s;
+
+}
+
+
+.forgot-password:hover {
+
+    color: #e0c77f;
+
+    text-decoration: none;
+
+}
+
+
+/* =========================================================
+   BUTTON
+========================================================= */
+
+.auth-btn {
+
+    width: 100% !important;
+
+    height: 56px;
+
+    background: transparent !important;
+
+    border: 1px solid #b89a55 !important;
+
+    border-radius: 0 !important;
+
+    color: #d8bd72 !important;
+
+    font-size: 12px !important;
+
+    letter-spacing: 2.5px;
+
+    text-transform: uppercase;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition: all 0.3s ease;
+
+}
+
+
+.auth-btn:hover {
+
+    background: #b89a55 !important;
+
+    color: #10172c !important;
+
+    border-color: #b89a55 !important;
+
+}
+
+
+/* =========================================================
+   DIVIDER
+========================================================= */
+
+.auth-divider {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 15px;
+
+    margin: 35px 0 25px;
+
+}
+
+
+.auth-divider span {
+
+    height: 1px;
+
+    flex: 1;
+
+    background: #2d3446;
+
+}
+
+
+.auth-divider p {
+
+    margin: 0;
+
+    color: #898b93;
+
+    font-size: 12px;
+
+    white-space: nowrap;
+
+}
+
+
+/* =========================================================
+   FOOTER
+========================================================= */
+
+.auth-footer {
+
+    text-align: center;
+
+}
+
+
+.auth-footer a {
+
+    color: #d8bd72;
+
+    text-decoration: none;
+
+    font-size: 13px;
+
+    letter-spacing: 0.5px;
+
+    transition: 0.3s;
+
+}
+
+
+.auth-footer a:hover {
+
+    color: #ffffff;
+
+    text-decoration: none;
+
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 767px) {
+
+    .auth-page {
+
+        padding: 50px 15px;
+
+    }
+
+
+    .auth-card {
+
+        padding: 40px 25px;
+
+    }
+
+
+    .auth-header h1 {
+
+        font-size: 36px !important;
+
+    }
+
+
+    .auth-options {
+
+        flex-direction: column;
+
+        align-items: flex-start;
+
+        gap: 15px;
+
+    }
+
+}
+
+</style>
+
 @endsection

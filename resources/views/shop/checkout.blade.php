@@ -1,608 +1,706 @@
 @extends('layouts.main')
-@section('title', 'Checkout')
+
+@section('title', 'Checkout — Alfred Lambremont Webre')
+
 @section('css')
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-toast-plugin/1.3.2/jquery.toast.min.css" integrity="sha512-wJgJNTBBkLit7ymC6vvzM1EcSWeM9mmOu+1USHaRBbHkm6W9EgM0HY27+UtUaprntaYQJF75rc8gjxllKs5OIQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-toast-plugin/1.3.2/jquery.toast.min.css"
+      integrity="sha512-wJgJNTBBkLit7ymC6vvzM1EcSWeM9mmOu+1USHaRBbHkm6W9EgM0HY27+UtUaprntaYQJF75rc8gjxllKs5OIQ=="
+      crossorigin="anonymous" referrerpolicy="no-referrer" />
 <style>
-  .payment-accordion img {
-    display: inline-block;
-    margin-left: 10px;
-    background-color: white;
-  }
-  form#order-place .form-control {
-    border-width: 1px;
-    border-color: rgb(150, 163, 218);
-    border-style: solid;
-    border-radius: 8px;
-    background-color: transparent;
-    height: 54px;
-    padding-left: 15px;
-    color: black;
-  }
-  form#order-place textarea.form-control {
-      height: auto !important;
-  }
+/* ── Checkout Page Styles ────────────────────── */
+.co-hero {
+    position: relative;
+    padding: 72px 0 50px;
+    overflow: hidden;
+    background: linear-gradient(180deg, rgba(29,36,82,.75), rgba(11,16,38,0));
+    border-bottom: 1px solid var(--rule);
+}
+.co-hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 75% 30%, rgba(200,162,75,.06), transparent 55%);
+    pointer-events: none;
+}
+.co-hero h1 {
+    font-family: var(--display);
+    font-size: clamp(36px, 5vw, 62px);
+    font-weight: 400;
+    letter-spacing: -.01em;
+    line-height: 1.05;
+}
+.co-breadcrumb {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--parchment-dim);
+    margin-bottom: 18px;
+}
+.co-breadcrumb a:hover { color: var(--brass); }
 
-  .checkoutPage {
-      padding: 50px 0px;
-  }
-  .checkoutPage .section-heading h3{
-      margin-bottom: 30px;
-  }
-  .YouOrder {
-      background-color: #c91d22;
-      color: white;
-      padding: 25px;
-      padding-bottom: 2px;
-      min-height: 300px;
-      border-radius: 3px;
-      margin-bottom: 20px;
-  }
-  .amount-wrapper {
-      padding-top: 12px;
-      border-top: 2px solid white;
-      text-align: left;
-      margin-top: 90px;
-  }
+.co-section { padding: 70px 0 100px; }
 
-  .amount-wrapper h2 {
-      font-size: 20px;
-      display: flex;
-      justify-content: space-between;
-  }
-  .amount-wrapper h3 {
-      display: FLEX;
-      justify-content: SPACE-BETWEEN;
-      font-size: 22px;
-      border-top: 2px solid white;
-      padding-top: 10px;
-      margin-top: 14px;
-  }
-  .checkoutPage span.invalid-feedback strong {
-      color: #721c24;
-      background-color: #f8d7da;
-      border-color: #f5c6cb;
-      display: block;
-      width: 100%;
-      font-size: 15px;
-      padding: 5px 15px;
-      border-radius: 6px;
-  }
-  .payment-accordion .btn-link {
+.co-layout {
+    display: grid;
+    grid-template-columns: 1fr 420px;
+    gap: 50px;
+    align-items: start;
+}
+@media(max-width:900px) {
+    .co-layout { grid-template-columns: 1fr; gap: 40px; }
+}
+
+/* ── Headings ── */
+.co-heading {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    color: var(--brass);
+    margin-bottom: 24px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--rule);
+}
+
+/* ── Form ── */
+.co-form .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+@media(max-width:600px) { .co-form .form-row { grid-template-columns: 1fr; } }
+.co-form .form-group { margin-bottom: 16px; }
+.co-form label {
     display: block;
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--parchment-dim);
+    margin-bottom: 7px;
+}
+.co-form input,
+.co-form textarea,
+.co-form select {
     width: 100%;
-    text-align: left;
-    padding: 10px 19px;
-    color: black;
-  }
-
-  .payment-accordion .card-header {
-      padding: 0px !important;
-  }
-  .payment-accordion .card-header:first-child{
-    border-radius: 0px;
-  }
-  .payment-accordion .card{
-    border-radius: 0px;
-  }
-  .form-group.hide {
-    display: none;
-  }
-  .StripeElement {
-    box-sizing: border-box;
-    height: 40px;
-    padding: 10px 12px;
-    border: 1px solid transparent;
-    border-radius: 4px;
-    background-color: white;
-    box-shadow: 0 1px 3px 0 #e6ebf1;
-    -webkit-transition: box-shadow 150ms ease;
-    transition: box-shadow 150ms ease;
-    border-width: 1px;
-    border-color: rgb(150, 163, 218);
-    border-style: solid;
-    margin-bottom: 10px;
-  }
-
-  .StripeElement--focus {
-    box-shadow: 0 1px 3px 0 #cfd7df;
-  }
-
-  .StripeElement--invalid {
-    border-color: #fa755a;
-  }
-
-  .StripeElement--webkit-autofill {
-    background-color: #fefde5 !important;
-  }
-  div#card-errors {
-    color: #721c24;
-    background-color: #f8d7da;
-    border-color: #f5c6cb;
-    display: block;
-    width: 100%;
-
+    background: rgba(11,16,38,.65);
+    border: 1px solid rgba(237,231,218,.18);
+    border-radius: 3px;
+    padding: 13px 15px;
+    color: var(--parchment);
+    font-family: var(--body);
     font-size: 15px;
-    padding: 5px 15px;
-    border-radius: 6px;
+    transition: border-color .2s;
+    flex: unset;
+    min-width: unset;
+}
+.co-form input:focus,
+.co-form textarea:focus,
+.co-form select:focus {
+    border-color: var(--signal);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(111,211,199,.08);
+}
+.co-form input::placeholder,
+.co-form textarea::placeholder { color: #5A5650; }
+.co-form .err-msg {
+    display: block;
+    font-family: var(--mono);
+    font-size: 10.5px;
+    color: #E08A7A;
+    margin-top: 5px;
+}
+.co-form select { appearance: none; }
+
+/* Login nudge */
+.login-nudge {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .08em;
+    color: var(--parchment-dim);
+    margin-bottom: 24px;
+    padding: 14px 18px;
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    background: rgba(29,36,82,.3);
+}
+.login-nudge a { color: var(--signal); }
+
+/* ── Right panel ── */
+.co-panel {
+    position: sticky;
+    top: 90px;
+}
+
+/* Order summary */
+.co-order-box {
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    background: rgba(20,27,61,.5);
+    overflow: hidden;
+    margin-bottom: 24px;
+}
+.co-order-items {
+    padding: 0 22px;
+    max-height: 280px;
+    overflow-y: auto;
+}
+.co-order-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--rule);
+    gap: 12px;
+}
+.co-order-item:last-child { border-bottom: none; }
+.co-item-name {
+    font-family: var(--body);
+    font-size: 14.5px;
+    line-height: 1.4;
+    color: var(--parchment);
+}
+.co-item-qty {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .1em;
+    color: var(--parchment-dim);
+    white-space: nowrap;
+}
+.co-item-price {
+    font-family: var(--mono);
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+.co-totals {
+    padding: 18px 22px;
+    border-top: 1px solid var(--rule);
+    background: rgba(11,16,38,.35);
+}
+.co-total-row {
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    letter-spacing: .04em;
+    padding: 6px 0;
+    color: var(--parchment-dim);
+}
+.co-total-row.grand {
+    font-size: 16px;
+    color: var(--parchment);
+    border-top: 1px solid var(--rule);
+    margin-top: 10px;
+    padding-top: 14px;
+}
+
+/* ── Payment block ── */
+.co-payment-block {
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    background: rgba(20,27,61,.4);
+    overflow: hidden;
+}
+.co-pay-tab {
+    display: flex;
+    border-bottom: 1px solid var(--rule);
+}
+.co-pay-tab-btn {
+    flex: 1;
+    padding: 14px 10px;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--parchment-dim);
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    transition: .2s;
+}
+.co-pay-tab-btn.active {
+    color: var(--brass);
+    border-bottom-color: var(--brass);
+    background: rgba(200,162,75,.06);
+}
+.co-pay-body { display: none; padding: 24px; }
+.co-pay-body.active { display: block; }
+
+/* Stripe element */
+.StripeElement {
+    background: rgba(11,16,38,.7);
+    border: 1px solid rgba(237,231,218,.18);
+    border-radius: 3px;
+    padding: 13px 15px;
+    margin-bottom: 12px;
+    transition: border-color .2s;
+}
+.StripeElement--focus { border-color: var(--signal); }
+.StripeElement--invalid { border-color: #E08A7A; }
+#card-errors {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: #E08A7A;
+    margin-bottom: 12px;
     display: none;
-    margin-bottom: 10px;
-  }
+}
+
+/* Pay button */
+.co-pay-btn {
+    width: 100%;
+    background: var(--brass);
+    color: var(--ink);
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    padding: 15px;
+    border-radius: 2px;
+    border: none;
+    cursor: pointer;
+    transition: background .2s;
+    margin-top: 6px;
+}
+.co-pay-btn:hover { background: #DCB963; }
+.co-pay-btn:disabled { opacity: .55; cursor: default; }
+
+/* Stripe logos */
+.co-stripe-logos {
+    margin-top: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--mono);
+    font-size: 9.5px;
+    letter-spacing: .08em;
+    color: var(--parchment-dim);
+}
+.co-stripe-logos img { height: 22px; }
+
+/* Alert banner */
+.co-alert {
+    border-radius: 3px;
+    padding: 14px 18px;
+    margin-bottom: 20px;
+    font-family: var(--mono);
+    font-size: 11.5px;
+    letter-spacing: .04em;
+}
+.co-alert-danger {
+    background: rgba(224,138,122,.12);
+    border: 1px solid rgba(224,138,122,.4);
+    color: #E08A7A;
+}
 </style>
 @endsection
+
 @section('content')
-<section class="banner inner-banner" style="background-image: url({{ asset('images/banner.png')}});">
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col-12">
-                <ul>
-                    <li>
-                        <img src="{{ asset('images/1-star.png') }}" alt="" >
-                    </li>
-                    <li>
-                        <div class="banner-content">
-                            <div class="section-heading">
-                                <h1 class="red">Checkout</h1>
-                            </div>
-                        </div>
-                    </li>
-                    <li>
-                        <img src="{{ asset('images/1-star.png') }}" alt="">
-                    </li>
-                </ul>
-            </div>
-        </div>
+
+{{-- ── Hero ── --}}
+<section class="co-hero">
+    <svg class="starfield" aria-hidden="true"></svg>
+    <div class="wrap">
+        <p class="co-breadcrumb">
+            <a href="{{ route('books') }}">Books</a>
+            <span style="margin:0 10px;opacity:.4">→</span>
+            Checkout
+        </p>
+        <h1>Checkout</h1>
     </div>
 </section>
-<section class="form-body checkoutPage">
-    <div class="container">
-        <div class="row">
-        <div class="col-12">
-            @if ($errors->any())
-                <div class="alert alert-danger">
-                    <ul>
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
-          </div>
-            <div class="col-md-7 col-lg-7 col-sm-7 col-xs-12">
-                <div class="section-heading dark-color">
-                    <h3>Billing Address</h3>
-                </div>
-                @if (\Session::has('stripe_error'))
-                <div class="alert alert-danger">
-                  {!! \Session::get('stripe_error') !!}
+
+{{-- ── Body ── --}}
+<section class="co-section">
+    <div class="wrap">
+
+        {{-- Error alerts --}}
+        @if ($errors->any())
+        <div class="co-alert co-alert-danger">
+            @foreach ($errors->all() as $error)
+                {{ $error }}<br>
+            @endforeach
+        </div>
+        @endif
+
+        @if (Session::has('stripe_error'))
+        <div class="co-alert co-alert-danger">{{ Session::get('stripe_error') }}</div>
+        @endif
+
+        <div class="co-layout">
+
+            {{-- ══ LEFT: Billing Form ══ --}}
+            <div>
+                <h2 class="co-heading">Billing Details</h2>
+
+                @if(!Auth::check())
+                <div class="login-nudge">
+                    Returning customer? <a href="{{ url('signin') }}">Click here to sign in</a>
                 </div>
                 @endif
-                <form action="{{route('order.place')}}" method="POST" id="order-place">
+
+                <form action="{{ route('order.place') }}" method="POST" id="order-place" class="co-form">
                     @csrf
-                    <input type="hidden" name="payment_id" value="" />
-                    <input type="hidden" name="payer_id" value="" />
-                    <input type="hidden" name="payment_status" value="" />
-                    <input type="hidden" name="payment_method" id="payment_method" value="paypal" />
+                    <input type="hidden" name="payment_id"     value="">
+                    <input type="hidden" name="payer_id"       value="">
+                    <input type="hidden" name="payment_status" value="">
+                    <input type="hidden" name="payment_method" id="payment_method" value="stripe">
+
                     @if(Auth::check())
-                    <?php  $_getUser= DB::table('users')->where('id', '=', Auth::user()->id)->first();?>
-                    <div class="form-group">
-                        <input class="form-control" id="f-name" name="first_name" value="{{old('first_name')?old('first_name'):$_getUser->name}}" placeholder="First Name *" type="text" required>
-                        <span class="invalid-feedback fname {{ ($errors->first('first_name') ? 'd-block' : '') }}">
-                          <strong>{{ $errors->first('first_name') }}</strong>
-                        </span>
-                    </div>
-                    <div class="form-group">
-                        <input class="form-control" id="address" name="address_line_1" placeholder="Address *" type="text" value="{{old('address_line_1')}}" required>
-                        <span class="invalid-feedback {{ ($errors->first('address_line_1') ? 'd-block' : '') }}" >
-                          <strong>{{ $errors->first('address_line_1') }}</strong>
-                        </span>
-                    </div>
-                    <div class="form-group">
-                        <input class="form-control right" placeholder="Town / City *" name="city" id="city" type="text" required>
-                        <span class="invalid-feedback {{ ($errors->first('city') ? 'd-block' : '') }}" >
-                          <strong>{{ $errors->first('city') }}</strong>
-                        </span>
-                    </div>
-                    <div class="form-group">
-                        <input type="text" name="country" id="country" class="form-control left" placeholder="Country">
-                        <span class="invalid-feedback {{ ($errors->first('country') ? 'd-block' : '') }}" >
-                          <strong>{{ $errors->first('country') }}</strong>
-                        </span>
-                    </div>
-                    <div class="form-group">
-                        <input class="form-control right" placeholder="Phone *" name="phone_no" type="text" value="{{old('phone_no')}}" required>
-                        <span class="invalid-feedback {{ ($errors->first('phone_no') ? 'd-block' : '') }}" >
-                          <strong>{{ $errors->first('phone_no') }}</strong>
-                        </span>
-                    </div>
-                    <div class="form-group">
-                        <input class="form-control left" name="email" placeholder="Email *" type="email" value="{{old('email')?old('email'):$_getUser->email}}" required>
-                        <span class="invalid-feedback {{ ($errors->first('email') ? 'd-block' : '') }}" >
-                          <strong>{{ $errors->first('email') }}</strong>
-                        </span>
-                    </div>
-                    <div class="form-group">
-                        <input class="form-control" id="zip_code" name="zip_code" placeholder="Postcode" type="text" value="{{old('zip_code')}}">
-                    </div>
-                    <div class="form-group">
-                        <textarea class="form-control" id="comment" name="order_notes" placeholder="Order Note" rows="5">{{old('order_notes')}}</textarea>
-                    </div>
+                        @php $_getUser = DB::table('users')->where('id', Auth::user()->id)->first(); @endphp
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="f-name">First Name *</label>
+                                <input id="f-name" name="first_name" type="text" required
+                                       placeholder="First Name"
+                                       value="{{ old('first_name', $_getUser->name ?? '') }}">
+                                @error('first_name')<span class="err-msg">{{ $message }}</span>@enderror
+                            </div>
+                            <div class="form-group">
+                                <label for="l-name">Last Name</label>
+                                <input id="l-name" name="last_name" type="text"
+                                       placeholder="Last Name"
+                                       value="{{ old('last_name') }}">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email">Email Address *</label>
+                            <input id="email" name="email" type="email" required
+                                   placeholder="you@example.com"
+                                   value="{{ old('email', $_getUser->email ?? '') }}">
+                            @error('email')<span class="err-msg">{{ $message }}</span>@enderror
+                        </div>
+
+                        <div class="form-group">
+                            <label for="phone_no">Phone *</label>
+                            <input name="phone_no" type="text" required
+                                   placeholder="+1 555 000 0000"
+                                   value="{{ old('phone_no') }}">
+                            @error('phone_no')<span class="err-msg">{{ $message }}</span>@enderror
+                        </div>
+
                     @else
-                    <a href="{{ url('signin') }}" target="_blank" class="runningBtn">Returning customer? Click here to login</a>
-                    <div class="form-group">
-                        <span class="invalid-feedback fname" >
-                        <strong>{{ $errors->first('first_name') }}</strong></span>
-                        <input class="form-control right" id="f-name" name="first_name" value="{{old('first_name')}}" placeholder="First Name" type="text">
-                    </div>
-                    <div class="form-group">
-                        <span class="invalid-feedback lname" >
-                        <strong>{{ $errors->first('last_name') }}</strong></span>
-                        <input class="form-control left" placeholder="Last Name" name="last_name" id="l-name" type="text" value="{{old('last_name')}}">
-                    </div>
-                    <div class="form-group">
-                        <span class="invalid-feedback" >
-                        <strong>{{ $errors->first('address_line_1') }}</strong></span>
-                        <input class="form-control" id="address" name="address_line_1" placeholder="Address" type="text" value="{{old('address_line_1')}}">
-                    </div>
-                    <div class="form-group">
-                        <span class="invalid-feedback" >
-                        <strong>{{ $errors->first('city') }}</strong></span>
-                        <input class="form-control right" placeholder="Town / City" name="city" id="city" type="text">
-                    </div>
-                    <div class="form-group">
-                        <span class="invalid-feedback" >
-                        <strong>{{ $errors->first('country') }}</strong></span>
-                        <input type="text" name="country" id="country" class="form-control left" placeholder="Country">
-                    </div>
-                    <div class="form-group">
-                        <span class="invalid-feedback" >
-                        <strong>{{ $errors->first('phone_no') }}</strong></span>
-                        <input class="form-control right" placeholder="Phone" name="phone_no" type="text" value="{{old('phone_no')}}">
-                    </div>
-                    <div class="form-group">
-                        <span class="invalid-feedback" >
-                        <strong>{{ $errors->first('email') }}</strong></span>
-                        <input class="form-control left" name="email" placeholder="Email" type="email" value="{{old('email')}}">
-                    </div>
-                    <div class="form-group">
-                        <input class="form-control" id="compnayName" name="zip_code" placeholder="Postcode" type="text" value="{{old('zip_code')}}">
-                    </div>
-                    @if(!Auth::check())
-                    <div class="form-group"> <label class="chkbox">
-                        <input type="checkbox" name="create_account" id="create_account"  {{ (! empty(old('create_account')) ? 'checked' : '') }}>
-                        Create An Account?</label>
 
-                    </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="f-name">First Name *</label>
+                                <input id="f-name" name="first_name" type="text" required
+                                       placeholder="First Name" value="{{ old('first_name') }}">
+                                @error('first_name')<span class="err-msg">{{ $message }}</span>@enderror
+                            </div>
+                            <div class="form-group">
+                                <label for="l-name">Last Name</label>
+                                <input id="l-name" name="last_name" type="text"
+                                       placeholder="Last Name" value="{{ old('last_name') }}">
+                            </div>
+                        </div>
 
-                    <div class="form-group">
+                        <div class="form-group">
+                            <label for="email">Email Address *</label>
+                            <input id="email" name="email" type="email" required
+                                   placeholder="you@example.com" value="{{ old('email') }}">
+                            @error('email')<span class="err-msg">{{ $message }}</span>@enderror
+                        </div>
 
-                            <input type="password" class="form-control left" name="password" placeholder="Password">
+                        <div class="form-group">
+                            <label for="phone_no">Phone *</label>
+                            <input name="phone_no" type="text" required
+                                   placeholder="+1 555 000 0000" value="{{ old('phone_no') }}">
+                            @error('phone_no')<span class="err-msg">{{ $message }}</span>@enderror
+                        </div>
 
-                        <span class="invalid-feedback" >
-                            <strong>{{ $errors->first('password') }}</strong></span>
-                    </div>
-                    <div class="form-group">
-
-                            <input type="password" class="form-control right" name="confirm_password" placeholder="Confirm Password">
-                            <span class="invalid-feedback" >
-                                <strong>{{ $errors->first('confirm_password') }}</strong></span>
-
-                    </div>
-
-s
+                        <div class="form-group" style="display:flex;align-items:center;gap:10px">
+                            <input type="checkbox" name="create_account" id="create_account"
+                                   {{ old('create_account') ? 'checked' : '' }}
+                                   style="width:auto;min-width:auto;flex:unset">
+                            <label for="create_account" style="margin:0;cursor:pointer">Create an account?</label>
+                        </div>
+                        <div class="form-row" id="pw-fields">
+                            <div class="form-group">
+                                <label>Password</label>
+                                <input type="password" name="password" placeholder="Password">
+                                @error('password')<span class="err-msg">{{ $message }}</span>@enderror
+                            </div>
+                            <div class="form-group">
+                                <label>Confirm Password</label>
+                                <input type="password" name="confirm_password" placeholder="Confirm">
+                            </div>
+                        </div>
                     @endif
+
+                    {{-- Address --}}
+                    <h2 class="co-heading" style="margin-top:32px">Shipping Address</h2>
+
                     <div class="form-group">
-                        <textarea class="form-control" id="comment" name="order_notes" placeholder="Order Note" rows="5"></textarea>
+                        <label for="address">Street Address *</label>
+                        <input id="address" name="address_line_1" type="text" required
+                               placeholder="123 Main Street" value="{{ old('address_line_1') }}">
+                        @error('address_line_1')<span class="err-msg">{{ $message }}</span>@enderror
                     </div>
-                    @endif
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="city">City *</label>
+                            <input id="city" name="city" type="text" required
+                                   placeholder="City" value="{{ old('city') }}">
+                            @error('city')<span class="err-msg">{{ $message }}</span>@enderror
+                        </div>
+                        <div class="form-group">
+                            <label for="zip_code">Postcode / ZIP</label>
+                            <input id="zip_code" name="zip_code" type="text"
+                                   placeholder="10001" value="{{ old('zip_code') }}">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="state">State / Region</label>
+                            <input id="state" name="state" type="text"
+                                   placeholder="State" value="{{ old('state') }}">
+                        </div>
+                        <div class="form-group">
+                            <label for="country">Country *</label>
+                            <input id="country" name="country" type="text" required
+                                   placeholder="United States" value="{{ old('country') }}">
+                            @error('country')<span class="err-msg">{{ $message }}</span>@enderror
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="comment">Order Notes (optional)</label>
+                        <textarea id="comment" name="order_notes" rows="4"
+                                  placeholder="Anything we should know about your order?">{{ old('order_notes') }}</textarea>
+                    </div>
                 </form>
             </div>
-            <div class="col-md-5 col-lg-5 col-sm-5 col-xs-12">
-                <div class="section-heading dark-color">
-                  <h3>YOUR ORDER</h3>
-                </div>
-                <div class="YouOrder">
-                    <?php $subtotal  = 0; $addon_total = 0; $variation = 0; ?>
-                    @foreach($cart as $key=>$value)
-                    <h5>{{ $value['name'] }} x {{ $value['qty'] }} <span>${{ $value['baseprice'] * $value['qty'] }}</span></h5>
-                    <?php $subtotal+= $value['baseprice'] * $value['qty'];
-                    $variation += $value['variation_price'];
-                    ?>
-                    @endforeach
-                    <div class="amount-wrapper">
-                      <h2>Item Subtotal <span>${{ $subtotal }}</span></h2>
-                      <h2> Variation <span>{{ $variation }}</span></h2>
-                      <h3> Total Price <span>${{ $subtotal +  $variation }}</span></h3>
-                    </div>
-                </div>
-                <div id="accordion" class="payment-accordion">
-                  <div class="card">
-                    <div class="card-header" id="headingOne">
-                      <h5 class="mb-0">
-                        <button class="btn btn-link" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne" data-payment="paypal">
-                          Pay with Paypal <img src="{{ asset('images/paypal.png') }}" width="60" alt="">
-                        </button>
-                      </h5>
-                    </div>
 
-                    <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordion">
-                      <div class="card-body">
-                        <input type="hidden" name="price" value="{{ $subtotal }}" />
-                        <input type="hidden" name="product_id" value="" />
-                        <input type="hidden" name="qty" value="value['qty']" />
-                        <div id="paypal-button-container-popup"></div>
-                      </div>
+            {{-- ══ RIGHT: Order + Payment ══ --}}
+            <div class="co-panel">
+
+                {{-- Order Summary --}}
+                <h2 class="co-heading">Your Order</h2>
+                <div class="co-order-box">
+                    <div class="co-order-items">
+                        @php $subtotal = 0; @endphp
+                        @foreach($cart as $key => $value)
+                            @php
+                                if (!is_array($value) || !isset($value['baseprice'])) continue;
+                                $lineTotal = $value['baseprice'] * $value['qty'];
+                                $subtotal += $lineTotal;
+                            @endphp
+                            <div class="co-order-item">
+                                <div>
+                                    <div class="co-item-name">{{ $value['name'] }}</div>
+                                    <div class="co-item-qty">Qty: {{ $value['qty'] }}</div>
+                                </div>
+                                <div class="co-item-price">${{ number_format($lineTotal, 2) }}</div>
+                            </div>
+                        @endforeach
                     </div>
-                  </div>
-                  <div class="card">
-                    <div class="card-header" id="headingTwo">
-                      <h5 class="mb-0">
-                        <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo" data-payment="stripe">
-                          Pay with Credit Card <img src="{{ asset('images/payment1.png') }}" alt="" width="150">
-                        </button>
-                      </h5>
-                    </div>
-                    <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordion">
-                      <div class="card-body">
-                        <div class="stripe-form-wrapper require-validation" data-stripe-publishable-key="{{ env('STRIPE_KEY') }}" data-cc-on-file="false">
-                          <div id="card-element"></div>
-                          <div id="card-errors" role="alert"></div>
-                          <div class="form-group">
-                            <button class="btn btn-red btn-block" type="button" id="stripe-submit">Pay Now ${{ $subtotal }}</button>
-                          </div>
+                    <div class="co-totals">
+                        <div class="co-total-row">
+                            <span>Subtotal</span>
+                            <span>${{ number_format($subtotal, 2) }}</span>
                         </div>
-                      </div>
+                        <div class="co-total-row">
+                            <span>Shipping</span>
+                            <span style="color:var(--signal)">Calculated at confirmation</span>
+                        </div>
+                        <div class="co-total-row grand">
+                            <span>Total</span>
+                            <span>${{ number_format($subtotal, 2) }}</span>
+                        </div>
                     </div>
-                  </div>
                 </div>
-                <hr>
 
-                <button type="submit" class="hvr-wobble-skew" style="display:none">place order</button>
-                <!--   <a class="PaymentMethod-a" id="paypal-button-container-popup" href="#" style="display:none"></a> -->
+                {{-- Payment --}}
+                <h2 class="co-heading" style="margin-top:28px">Payment Method</h2>
+                <div class="co-payment-block">
+                    <div class="co-pay-tab">
+                        <button class="co-pay-tab-btn active" data-tab="stripe" id="tabStripe">
+                            Credit / Debit Card
+                        </button>
+                        <button class="co-pay-tab-btn" data-tab="paypal" id="tabPaypal">
+                            PayPal
+                        </button>
+                    </div>
+
+                    {{-- Stripe --}}
+                    <div class="co-pay-body active" id="bodyStripe">
+                        <div class="stripe-form-wrapper"
+                             data-stripe-publishable-key="{{ env('STRIPE_KEY') }}"
+                             data-cc-on-file="false">
+                            <div id="card-element"></div>
+                            <div id="card-errors" role="alert"></div>
+                            <button class="co-pay-btn" type="button" id="stripe-submit">
+                                Place Order &amp; Pay ${{ number_format($subtotal, 2) }}
+                            </button>
+                        </div>
+                        <div class="co-stripe-logos">
+                            <span>Secured by</span>
+                            <img src="https://stripe.com/img/v3/home/twitter.png"
+                                 onerror="this.style.display='none'"
+                                 alt="Stripe">
+                            <span>SSL encrypted</span>
+                        </div>
+                    </div>
+
+                    {{-- PayPal --}}
+                    <div class="co-pay-body" id="bodyPaypal">
+                        <p style="font-family:var(--mono);font-size:11px;color:var(--parchment-dim);margin-bottom:16px">
+                            You will be redirected to PayPal to complete payment.
+                        </p>
+                        <input type="hidden" name="price_pp"      value="{{ $subtotal }}">
+                        <div id="paypal-button-container-popup"></div>
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>
 </section>
+
 @endsection
+
 @section('js')
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-toast-plugin/1.3.2/jquery.toast.min.js" integrity="sha512-zlWWyZq71UMApAjih4WkaRpikgY9Bz1oXIW5G0fED4vk14JjGlQ1UmkGM392jEULP8jbNMiwLWdM8Z87Hu88Fw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-toast-plugin/1.3.2/jquery.toast.min.js"
+        integrity="sha512-zlWWyZq71UMApAjih4WkaRpikgY9Bz1oXIW5G0fED4vk14JjGlQ1UmkGM392jEULP8jbNMiwLWdM8Z87Hu88Fw=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script src="https://www.paypalobjects.com/api/checkout.js"></script>
 <script src="https://js.stripe.com/v3/"></script>
 <script>
+/* ── Payment tab switcher ── */
+document.querySelectorAll('.co-pay-tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.co-pay-tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.co-pay-body').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('body' + btn.dataset.tab.charAt(0).toUpperCase() + btn.dataset.tab.slice(1)).classList.add('active');
+        document.getElementById('payment_method').value = btn.dataset.tab;
+    });
+});
 
-      // $(document).on('click', ".btn", function(e){
-      //   $('#order-place').submit();
-      // });
-
-      $('#accordion .btn-link').on('click', function(e) {
-        if (!$(this).hasClass('collapsed')) {
-          e.stopPropagation();
-        }
-        $('#payment_method').val($(this).attr('data-payment'));
-      });
-
-      $('.bttn').on('change', function() {
-        var count = 0;
-        if($(this).prop("checked") == true){
-          if($('#f-name').val()== "") {
-            $('.fname').text('first name is required field');
-          } else {
-            $('.fname').text("");
-            count++;
-          }
-          if($('#l-name').val()== "") {
-            $('.lname').text('last name is required field');
-          } else {
-            $('.lname').text("");
-            count++;
-          }
-
-           if(count == 2) {
-            $('#paypal-button-container-popup').show();
-           } else {
-             $(this).prop("checked",false);
-
-             $.toast({
-                  heading: 'Alert!',
-                  position: 'bottom-right',
-                  text:  'Please fill the required fields before proceeding to pay',
-                  loaderBg: '#ff6849',
-                  icon: 'error',
-                  hideAfter: 5000,
-                  stack: 6
-              });
-
-             return false;
-
-           }
-
-         } else {
-          $('#paypal-button-container-popup').hide();
-          // $('.btn').show();
-         }
-
-         $('input[name="' + this.name + '"]').not(this).prop('checked', false);
-         //$(this).siblings('input[type="checkbox"]').prop('checked', false);
-      });
-
-      paypal.Button.render({
-      env: 'sandbox', //production
-
-      style: {
-        label: 'checkout',
-        size:  'responsive',
-        shape: 'rect',
-        color: 'gold'
-      },
-      client: {
-        sandbox: 'AV06KMdIerC8pd6_i1gQQlyVoIwV8e_1UZaJKj9-aELaeNXIGMbdR32kDDEWS4gRsAis6SRpUVYC9Jmf',
-        // production:'ARIYLCFJIoObVCUxQjohmqLeFQcHKmQ7haI-4kNxHaSwEEALdWABiLwYbJAwAoHSvdHwKJnnOL3Jlzje',
-      },
-      validate: function(actions) {
-        actions.disable();
-        paypalActions = actions;
-      },
-
-      onClick:  function(e) {
-        var errorCount = checkEmptyFileds();
-
-        if(errorCount == 1){
-          $.toast({
-              heading: 'Alert!',
-              position: 'bottom-right',
-              text:  'Please fill the required fields before proceeding to pay',
-              loaderBg: '#ff6849',
-              icon: 'error',
-              hideAfter: 5000,
-              stack: 6
-          });
-          paypalActions.disable();
-        }else{
-          paypalActions.enable();
-        }
-      },
-      payment: function(data, actions) {
-        return actions.payment.create({
-          payment: {
-            transactions: [
-              {
-                amount: { total: {{number_format(((float)$subtotal),2, '.', '')}}, currency: 'USD' }
-              }
-            ]
-          }
-        });
-      },
-      onAuthorize: function(data, actions) {
-        return actions.payment.execute().then(function() {
-          // generateNotification('success','Payment Authorized');
-
-           $.toast({
-                heading: 'Success!',
-                position: 'bottom-right',
-                text:  'Payment Authorized',
-                loaderBg: '#ff6849',
-                icon: 'success',
-                hideAfter: 1000,
-                stack: 6
-            });
-
-          var params = {
-            payment_status:'Completed',
-            paymentID: data.paymentID,
-            payerID: data.payerID
-          };
-
-          // console.log(data.paymentID);
-          // return false;
-          $('input[name="payment_status"]').val('Completed');
-          $('input[name="payment_id"]').val(data.paymentID);
-          $('input[name="payer_id"]').val(data.payerID);
-          $('input[name="payment_method"]').val('paypal');
-          $('#order-place').submit();
-        });
-      },
-      onCancel: function(data, actions) {
-          var params = {
-            payment_status:'Failed',
-            paymentID: data.paymentID
-          };
-          $('input[name="payment_status"]').val('Failed');
-          $('input[name="payment_id"]').val(data.paymentID);
-          $('input[name="payer_id"]').val('');
-          $('input[name="payment_method"]').val('paypal');
-      }
-    }, '#paypal-button-container-popup');
-
-
-  var stripe = Stripe('{{ env("STRIPE_KEY") }}');
-
-  // Create an instance of Elements.
-  var elements = stripe.elements();
-  var style = {
+/* ── Stripe ── */
+const stripe   = Stripe('{{ env("STRIPE_KEY") }}');
+const elements = stripe.elements();
+const style = {
     base: {
-      color: '#32325d',
-      lineHeight: '18px',
-      fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
-      fontSmoothing: 'antialiased',
-      fontSize: '16px',
-      '::placeholder': {
-        color: '#aab7c4'
-      }
+        color: '#EDE7DA',
+        lineHeight: '20px',
+        fontFamily: '"IBM Plex Mono", monospace',
+        fontSmoothing: 'antialiased',
+        fontSize: '14px',
+        '::placeholder': { color: '#5A5650' }
     },
-    invalid: {
-      color: '#fa755a',
-      iconColor: '#fa755a'
-    }
-  };
-  var card = elements.create('card', {style: style});
-  card.mount('#card-element');
+    invalid: { color: '#E08A7A', iconColor: '#E08A7A' }
+};
+const card = elements.create('card', { style });
+card.mount('#card-element');
 
-  card.addEventListener('change', function(event) {
-    var displayError = document.getElementById('card-errors');
+card.addEventListener('change', function(event) {
+    const displayError = document.getElementById('card-errors');
     if (event.error) {
-      $(displayError).show();
-      displayError.textContent = event.error.message;
+        displayError.style.display = 'block';
+        displayError.textContent = event.error.message;
     } else {
-      $(displayError).hide();
-      displayError.textContent = '';
+        displayError.style.display = 'none';
+        displayError.textContent = '';
     }
-  });
+});
 
-  var form = document.getElementById('order-place');
+document.getElementById('stripe-submit').addEventListener('click', function() {
+    const btn = this;
+    if (!validateForm()) return;
 
-  $('#stripe-submit').click(function(){
+    btn.disabled = true;
+    btn.textContent = 'Processing…';
+
     stripe.createToken(card).then(function(result) {
-      var errorCount = checkEmptyFileds();
-      if ((result.error) || (errorCount == 1)) {
-        // Inform the user if there was an error.
-        if(result.error){
-          var errorElement = document.getElementById('card-errors');
-          $(errorElement).show();
-          errorElement.textContent = result.error.message;
-        }else{
-          $.toast({
-            heading: 'Alert!',
-            position: 'bottom-right',
-            text:  'Please fill the required fields before proceeding to pay',
-            loaderBg: '#ff6849',
-            icon: 'error',
-            hideAfter: 5000,
-            stack: 6
-          });
+        if (result.error) {
+            const errEl = document.getElementById('card-errors');
+            errEl.style.display = 'block';
+            errEl.textContent = result.error.message;
+            btn.disabled = false;
+            btn.textContent = 'Place Order & Pay ${{ number_format($subtotal, 2) }}';
+        } else {
+            stripeTokenHandler(result.token);
         }
-      } else {
-        // Send the token to your server.
-        stripeTokenHandler(result.token);
-      }
     });
-  });
+});
 
-  function stripeTokenHandler(token) {
-    // Insert the token ID into the form so it gets submitted to the server
-    var form = document.getElementById('order-place');
-    var hiddenInput = document.createElement('input');
-    hiddenInput.setAttribute('type', 'hidden');
-    hiddenInput.setAttribute('name', 'stripeToken');
-    hiddenInput.setAttribute('value', token.id);
-    form.appendChild(hiddenInput);
+function stripeTokenHandler(token) {
+    const form  = document.getElementById('order-place');
+    const input = document.createElement('input');
+    input.setAttribute('type',  'hidden');
+    input.setAttribute('name',  'stripeToken');
+    input.setAttribute('value', token.id);
+    form.appendChild(input);
+    document.getElementById('payment_method').value = 'stripe';
     form.submit();
-  }
+}
 
-
-  function checkEmptyFileds(){
-    var errorCount = 0;
-    $('form#order-place').find('.form-control').each(function(){
-      if($(this).prop('required')){
-        if( !$(this).val() ) {
-          $(this).parent().find('.invalid-feedback').addClass('d-block');
-          $(this).parent().find('.invalid-feedback strong').html('Field is Required');
-          errorCount = 1;
+/* ── PayPal ── */
+paypal.Button.render({
+    env: 'sandbox',
+    style: { label: 'checkout', size: 'responsive', shape: 'rect', color: 'gold' },
+    client: {
+        sandbox: 'AV06KMdIerC8pd6_i1gQQlyVoIwV8e_1UZaJKj9-aELaeNXIGMbdR32kDDEWS4gRsAis6SRpUVYC9Jmf',
+    },
+    onClick: function() {
+        if (!validateForm()) {
+            showToast('Please complete all required fields first.', 'error');
         }
-      }
+    },
+    payment: function(data, actions) {
+        return actions.payment.create({
+            payment: { transactions: [{ amount: { total: {{ number_format((float)$subtotal, 2, '.', '') }}, currency: 'USD' } }] }
+        });
+    },
+    onAuthorize: function(data, actions) {
+        return actions.payment.execute().then(function() {
+            document.querySelector('input[name="payment_status"]').value = 'Completed';
+            document.querySelector('input[name="payment_id"]').value     = data.paymentID;
+            document.querySelector('input[name="payer_id"]').value       = data.payerID;
+            document.getElementById('payment_method').value              = 'paypal';
+            document.getElementById('order-place').submit();
+        });
+    },
+    onCancel: function(data) {
+        document.querySelector('input[name="payment_status"]').value = 'Failed';
+    }
+}, '#paypal-button-container-popup');
+
+/* ── Form validation ── */
+function validateForm() {
+    let ok = true;
+    document.querySelectorAll('#order-place input[required]').forEach(inp => {
+        if (!inp.value.trim()) {
+            inp.style.borderColor = '#E08A7A';
+            ok = false;
+        } else {
+            inp.style.borderColor = '';
+        }
     });
-    return errorCount;
-  }
+    if (!ok) {
+        showToast('Please fill in all required fields.', 'error');
+    }
+    return ok;
+}
 
-
-
+function showToast(msg, type) {
+    $.toast({
+        heading: type === 'error' ? 'Error' : 'Notice',
+        position: 'bottom-right',
+        text: msg,
+        loaderBg: type === 'error' ? '#E08A7A' : '#6FD3C7',
+        icon: type === 'error' ? 'error' : 'info',
+        hideAfter: 4000,
+        stack: 4
+    });
+}
 </script>
 @endsection

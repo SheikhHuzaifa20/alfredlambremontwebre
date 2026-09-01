@@ -1,9 +1,5 @@
 <?php
 
-
-
-
-
 use App\Http\Controllers\Admin\BlogController;
 use App\Http\Controllers\Admin\TestimonialController;
 use App\Http\Controllers\Admin\TestimonialsController;
@@ -110,6 +106,13 @@ Route::get('about', 'HomeController@about')->name('about');
 Route::get('blog', 'HomeController@blog')->name('blog');
 Route::get('/blog/{id}', 'HomeController@blogDetail')->name('blog.detail');
 Route::get('books', 'HomeController@books')->name('books');
+Route::get('books/{slug}', 'HomeController@bookDetail')->name('book.detail');
+Route::post('cart/add', 'ProductController@addToCart')->name('cart.add');
+
+Route::any('/cart/remove', 'ProductController@removeFromCart')->name('cart.remove');
+
+Route::get('/cart/data', 'ProductController@getCartData')->name('cart.data');
+Route::post('/cart/sync', 'HomeController@cartSync')->name('cart.sync');
 Route::get('bulk-and-course-orders', 'HomeController@bulkAndCourseOrders')->name('bulk-and-course-orders');
 Route::get('contact', 'HomeController@contact')->name('contact');
 Route::get('exopolitics', 'HomeController@exopolitics')->name('exopolitics');
@@ -117,8 +120,8 @@ Route::get('foreign-rights', 'HomeController@foreignRights')->name('foreign-righ
 Route::get('returns', 'HomeController@returns')->name('returns');
 Route::get('shipping-and-delivery', 'HomeController@shippingAndDelivery')->name('shipping-and-delivery');
 
-
-
+Route::post('/inquiry', 'HomeController@store')->name('inquiry.store');
+Route::post('/newsletter-submit', 'HomeController@newsletterSubmit')->name('newsletter.submit');
 
 Route::post('careerSubmit', 'HomeController@careerSubmit')->name('contactUsSubmit');
 Route::post('update-content', 'HomeController@updateContent')->name('update-content');
@@ -152,7 +155,7 @@ Route::get('/cart', 'ProductController@cart')->name('cart');
 Route::get('/payment', 'OrderController@payment')->name('payment');
 Route::get('invoice/{id}', 'LoggedInController@invoice')->name('invoice');
 Route::get('/payment', 'OrderController@payment')->name('payment');
-Route::get('/checkout', 'OrderController@checkout')->name('checkout');
+Route::any('/checkout', 'OrderController@checkout')->name('checkout');
 Route::post('/place-order', 'OrderController@placeOrder')->name('order.place');
 Route::post('/new-order', 'OrderController@newOrder')->name('new.place');
 Route::post('shipping', 'ProductController@shipping')->name('shipping');
