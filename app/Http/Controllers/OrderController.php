@@ -397,7 +397,7 @@ class OrderController extends Controller
 		// ============================================
 		if ($request->payment_method == 'paypal') {
 			$order->transaction_id = $request->payment_id ?? '';
-			$order->order_status = $request->payment_status ?? 'pending';
+			$order->order_status = 'pending';
 			$order->card_token = $request->payer_id ?? '';
 		} elseif ($request->payment_method == 'cash' || $request->payment_method == 'cod') {
 			$order->order_status = 'pending';
@@ -445,7 +445,7 @@ class OrderController extends Controller
 					Session::put('used_stripe_tokens', $usedTokens);
 
 					$order->transaction_id = $chargeJson['balance_transaction'];
-					$order->order_status = 'succeeded';
+					$order->order_status = 'pending';
 				} else {
 					Session::flash('flash_message', 'Payment failed. Please try again.');
 					Session::flash('alert-class', 'alert-danger');
