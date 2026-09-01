@@ -90,11 +90,12 @@
                             <label>Status</label>
                             <select id="statusFilter" class="form-control">
                                 <option value="">All</option>
-                                <option value="delivered">Delivered</option>
                                 <option value="pending">Pending</option>
-                                <option value="canceled">Canceled</option>
                                 <option value="in_process">In Process</option>
-                                <option value="returned">Returned</option>
+                                <option value="shipped">Shipped</option>
+                                <option value="completed">Completed / Delivered</option>
+                                <option value="refund">Refund / Returned</option>
+                                <option value="failed">Failed / Canceled</option>
                             </select>
                         </div>
 
@@ -197,7 +198,8 @@ $(function () {
         $('.yajra-datatable').DataTable().ajax.reload();
     });
 
-    $(document).on('click', '.changeStatus', function () {
+    $(document).on('click', '.changeStatus', function (e) {
+        e.preventDefault();
         let orderId = $(this).data('id');
         let status  = $(this).data('status');
 
@@ -210,6 +212,31 @@ $(function () {
             },
             success: function (res) {
                 $('.yajra-datatable').DataTable().ajax.reload(null, false);
+                if (typeof $.toast !== 'undefined') {
+                    $.toast({
+                        heading: 'Success',
+                        text: 'Order status updated to ' + status,
+                        position: 'top-right',
+                        icon: 'success',
+                        loaderBg: '#5ba035',
+                        hideAfter: 3000
+                    });
+                }
+                setTimeout(function() {
+                    location.reload();
+                }, 800);
+            },
+            error: function (xhr) {
+                if (typeof $.toast !== 'undefined') {
+                    $.toast({
+                        heading: 'Error',
+                        text: 'Failed to update order status.',
+                        position: 'top-right',
+                        icon: 'error',
+                        loaderBg: '#ff6849',
+                        hideAfter: 3000
+                    });
+                }
             }
         });
     });

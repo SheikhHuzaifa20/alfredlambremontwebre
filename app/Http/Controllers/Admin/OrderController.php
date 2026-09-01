@@ -16,10 +16,11 @@ class OrderController extends Controller
 {
     public function index()
     {
-        $pendingOrdersCount = Orders::where('order_status', 'pending')->count();
-        $completedOrdersCount = Orders::where('order_status', 'delivered')->count();
-        $canceledOrdersCount = Orders::where('order_status', 'canceled')->count();
-        $returnedOrdersCount = Orders::where('order_status', 'returned')->count();
+        $pendingOrdersCount   = Orders::whereIn('order_status', ['pending', 'in_process'])->count();
+        $completedOrdersCount = Orders::whereIn('order_status', ['delivered', 'completed', 'succeeded'])->count();
+        $returnedOrdersCount  = Orders::whereIn('order_status', ['returned', 'refund', 'refunded'])->count();
+        $canceledOrdersCount  = Orders::whereIn('order_status', ['canceled', 'failed'])->count();
+
         return view('admin.orders.index', compact(
             'pendingOrdersCount',
             'completedOrdersCount',
@@ -34,7 +35,15 @@ class OrderController extends Controller
 
         // Status filter
         if ($request->filled('status')) {
-            $query->where('order_status', $request->status);
+            if ($request->status == 'completed') {
+                $query->whereIn('order_status', ['delivered', 'completed', 'succeeded']);
+            } elseif ($request->status == 'refund') {
+                $query->whereIn('order_status', ['returned', 'refund', 'refunded']);
+            } elseif ($request->status == 'failed') {
+                $query->whereIn('order_status', ['canceled', 'failed']);
+            } else {
+                $query->where('order_status', $request->status);
+            }
         }
 
         // Date filter
@@ -62,10 +71,10 @@ class OrderController extends Controller
                 $status = $row->order_status;
 
                 $badge = match ($status) {
-                    'delivered'  => 'success',
+                    'delivered', 'completed', 'succeeded' => 'success',
                     'pending'    => 'warning',
-                    'canceled'   => 'danger',
-                    'returned'   => 'info',
+                    'canceled', 'failed'   => 'danger',
+                    'returned', 'refund', 'refunded'   => 'info',
                     'in_process' => 'primary',
                     'shipped'    => 'secondary',
                     default      => 'secondary',
@@ -84,9 +93,9 @@ class OrderController extends Controller
                             <a class="dropdown-item changeStatus" data-id="'.$row->id.'" data-status="pending">Pending</a>
                             <a class="dropdown-item changeStatus" data-id="'.$row->id.'" data-status="in_process">In Process</a>
                             <a class="dropdown-item changeStatus" data-id="'.$row->id.'" data-status="shipped">Shipped</a>
-                            <a class="dropdown-item changeStatus" data-id="'.$row->id.'" data-status="delivered">Delivered</a>
-                            <a class="dropdown-item changeStatus" data-id="'.$row->id.'" data-status="returned">Returned</a>
-                            <a class="dropdown-item changeStatus text-danger" data-id="'.$row->id.'" data-status="canceled">Canceled</a>
+                            <a class="dropdown-item changeStatus" data-id="'.$row->id.'" data-status="delivered">Completed / Delivered</a>
+                            <a class="dropdown-item changeStatus" data-id="'.$row->id.'" data-status="returned">Refund / Returned</a>
+                            <a class="dropdown-item changeStatus text-danger" data-id="'.$row->id.'" data-status="canceled">Failed / Canceled</a>
                         </div>
                     </div>
                 ';
@@ -118,7 +127,9 @@ class OrderController extends Controller
             'in_process'  => ['class' => 'primary', 'icon' => 'spinner'],
             'shipped'     => ['class' => 'secondary', 'icon' => 'truck'],
             'delivered'   => ['class' => 'success', 'icon' => 'check-circle'],
+            'succeeded'   => ['class' => 'success', 'icon' => 'check-circle'],
             'canceled'    => ['class' => 'danger', 'icon' => 'times-circle'],
+            'failed'      => ['class' => 'danger', 'icon' => 'times-circle'],
             'returned'    => ['class' => 'info', 'icon' => 'undo'],
         ];
 
@@ -168,27 +179,12 @@ class OrderController extends Controller
     public function changeStatus(Request $request, $id)
     {
         $request->validate([
-            'status' => 'required|in:pending,in_process,shipped,delivered,returned,canceled'
+            'status' => 'required|string|in:pending,in_process,shipped,delivered,succeeded,returned,canceled,failed'
         ]);
 
         $order = Orders::findOrFail($id);
 
-        $allowedFlow = [
-            'pending'    => ['in_process', 'canceled'],
-            'in_process' => ['shipped', 'canceled'],
-            'shipped'    => ['delivered', 'returned'],
-        ];
-
-        $current = $order->order_status;
-
-        if (!in_array($request->status, $allowedFlow[$current] ?? [])) {
-            return response()->json([
-                'error' => true,
-                'message' => 'Invalid status transition'
-            ], 422);
-        }
-
-        // Update order status
+        // Update order status directly
         $order->order_status = $request->status;
         $order->save();
 
@@ -208,7 +204,9 @@ class OrderController extends Controller
             'in_process'  => ['class' => 'primary', 'icon' => 'spinner'],
             'shipped'     => ['class' => 'secondary', 'icon' => 'truck'],
             'delivered'   => ['class' => 'success', 'icon' => 'check-circle'],
+            'succeeded'   => ['class' => 'success', 'icon' => 'check-circle'],
             'canceled'    => ['class' => 'danger', 'icon' => 'times-circle'],
+            'failed'      => ['class' => 'danger', 'icon' => 'times-circle'],
             'returned'    => ['class' => 'info', 'icon' => 'undo'],
         ];
 
@@ -220,7 +218,7 @@ class OrderController extends Controller
         return response()->json([
             'success'  => true,
             'status'   => $request->status,
-            'badge'    => $badgeMap[$request->status],
+            'badge'    => $badgeMap[$request->status] ?? ['class' => 'secondary', 'icon' => 'question'],
             'timeline' => $timelineHtml
         ]);
     }
