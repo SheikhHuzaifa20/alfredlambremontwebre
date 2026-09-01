@@ -1,3 +1,7 @@
+@php
+    $copyright = DB::table('mflag')->where('id', '499')->first();
+    $privacy = DB::table('mflag')->where('id', '1973')->first();
+@endphp
 <footer>
     <div class="wrap">
         <div class="fgrid">
@@ -28,8 +32,8 @@
             </div>
         </div>
         <div class="legal">
-            <span>&copy; <span id="yr"></span> Alfred Lambremont Webre. All rights reserved.</span>
-            <span>Privacy &middot; Terms &middot; Site by The Authors Atelier</span>
+            <span>{{ $copyright->flag_value }}</span>
+            <span>{{ $privacy->flag_value }}</span>
         </div>
     </div>
 </footer>
