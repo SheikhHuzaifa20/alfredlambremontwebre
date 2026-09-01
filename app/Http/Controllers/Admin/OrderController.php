@@ -57,7 +57,13 @@ class OrderController extends Controller
         return DataTables::of($query)
 
             ->addColumn('customer_name', function ($row) {
-                return $row->user->name ?? trim(($row->delivery_first_name ?? '') . ' ' . ($row->delivery_last_name ?? '')) ?: 'Guest Customer';
+                // ✅ SIRF delivery_first_name aur delivery_last_name se name banayein
+                $firstName = $row->delivery_first_name ?? '';
+                $lastName = $row->delivery_last_name ?? '';
+                $fullName = trim($firstName . ' ' . $lastName);
+
+                // Agar dono empty hain toh Guest Customer dikhayein
+                return !empty($fullName) ? $fullName : 'Guest Customer';
             })
 
             ->addColumn('created_at', function ($row) {
@@ -90,12 +96,12 @@ class OrderController extends Controller
                             ' . $label . '
                         </button>
                         <div class="dropdown-menu">
-                            <a class="dropdown-item changeStatus" data-id="'.$row->id.'" data-status="pending">Pending</a>
-                            <a class="dropdown-item changeStatus" data-id="'.$row->id.'" data-status="in_process">In Process</a>
-                            <a class="dropdown-item changeStatus" data-id="'.$row->id.'" data-status="shipped">Shipped</a>
-                            <a class="dropdown-item changeStatus" data-id="'.$row->id.'" data-status="delivered">Completed / Delivered</a>
-                            <a class="dropdown-item changeStatus" data-id="'.$row->id.'" data-status="returned">Refund / Returned</a>
-                            <a class="dropdown-item changeStatus text-danger" data-id="'.$row->id.'" data-status="canceled">Failed / Canceled</a>
+                            <a class="dropdown-item changeStatus" data-id="' . $row->id . '" data-status="pending">Pending</a>
+                            <a class="dropdown-item changeStatus" data-id="' . $row->id . '" data-status="in_process">In Process</a>
+                            <a class="dropdown-item changeStatus" data-id="' . $row->id . '" data-status="shipped">Shipped</a>
+                            <a class="dropdown-item changeStatus" data-id="' . $row->id . '" data-status="delivered">Completed / Delivered</a>
+                            <a class="dropdown-item changeStatus" data-id="' . $row->id . '" data-status="returned">Refund / Returned</a>
+                            <a class="dropdown-item changeStatus text-danger" data-id="' . $row->id . '" data-status="canceled">Failed / Canceled</a>
                         </div>
                     </div>
                 ';
@@ -107,9 +113,9 @@ class OrderController extends Controller
 
             ->addColumn('action', function ($row) {
                 return '
-                    <a href="'.route('admin.orders.show', $row->id).'" class="btn btn-sm btn-primary">View</a>
-                    <a href="'.route('admin.orders.invoice', $row->id).'" class="btn btn-sm btn-outline-secondary" target="_blank"><i class="fas fa-file-invoice"></i> Invoice</a>
-                    <button data-id="'.$row->id.'" class="btn btn-sm btn-danger deleteOrders" title="Delete Orders">Delete</button>
+                    <a href="' . route('admin.orders.show', $row->id) . '" class="btn btn-sm btn-primary">View</a>
+                    <a href="' . route('admin.orders.invoice', $row->id) . '" class="btn btn-sm btn-outline-secondary" target="_blank"><i class="fas fa-file-invoice"></i> Invoice</a>
+                    <button data-id="' . $row->id . '" class="btn btn-sm btn-danger deleteOrders" title="Delete Orders">Delete</button>
                 ';
             })
 
@@ -142,7 +148,6 @@ class OrderController extends Controller
     public function edit($id)
     {
         $order = Orders::findOrFail($id);
-
         return view('admin.orders.edit', compact('order'));
     }
 
@@ -150,8 +155,8 @@ class OrderController extends Controller
     {
         $order = Orders::findOrFail($id);
         $order->delete();
-        if($order->order_products){
-            foreach($order->order_products as $product){
+        if ($order->order_products) {
+            foreach ($order->order_products as $product) {
                 $product->delete();
             }
         }
@@ -228,7 +233,12 @@ class OrderController extends Controller
         $old = $address->toArray();
 
         $address->update($request->only([
-            'recipient','street','city','state','zip','country'
+            'recipient',
+            'street',
+            'city',
+            'state',
+            'zip',
+            'country'
         ]));
 
         AddressAuditLog::create([
@@ -254,9 +264,8 @@ class OrderController extends Controller
         ]);
 
         $pdf = Pdf::loadView('admin.orders.invoice', compact('order'))
-                  ->setPaper('a4');
+            ->setPaper('a4');
 
         return $pdf->stream("invoice-order-{$order->id}.pdf");
-        // OR ->download()
     }
 }
