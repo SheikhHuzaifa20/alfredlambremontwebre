@@ -10,7 +10,7 @@ use App\Program;
 use App\imagetable;
 use App\Product;
 use App\Banner;
-use App\Models\orders;
+use App\Models\Orders;
 use App\Models\OrderProducts; 
 use App\Http\Requests\OrderRequest;
 use DB;
