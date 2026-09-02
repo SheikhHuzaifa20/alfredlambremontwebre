@@ -173,26 +173,19 @@ class HomeController extends Controller
 
         $email = trim($request->newsletter_email);
         $is_email = \App\Models\Newsletter::where('newsletter_email', $email)->count();
+
         if ($is_email == 0) {
             $newsletter = new \App\Models\Newsletter;
             $newsletter->newsletter_email = $email;
             $newsletter->save();
 
-            $adminEmail = config('mail.admin_email') ?: (config('mail.from.address') ?: 'admin@alfredlambremontwebre.com');
+            // Fix: Pass the email string, not the model object
+            Mail::to(config('mail.admin_email'))
+                ->send(new NewsletterAdminMail($email));
 
-            // Send confirmation email to subscriber
-            try {
-                Mail::to($email)->send(new NewsletterUserMail($email));
-            } catch (\Exception $e) {
-                \Log::error('Newsletter User Mail Error: ' . $e->getMessage());
-            }
-
-            // Send notification email to admin
-            try {
-                Mail::to($adminEmail)->send(new NewsletterAdminMail($email));
-            } catch (\Exception $e) {
-                \Log::error('Newsletter Admin Mail Error: ' . $e->getMessage());
-            }
+            // Fix: Pass the email string, not the model object
+            Mail::to($email)
+                ->send(new NewsletterUserMail($email));
 
             return response()->json(['message' => 'Thank you! You have been subscribed successfully.', 'status' => true]);
         } else {
@@ -241,23 +234,12 @@ class HomeController extends Controller
             'notes' => $request->notes,
         ]);
 
-        $adminEmail = config('mail.admin_email') ?: config('mail.from.address');
+        Mail::to(config('mail.admin_email'))
+            ->send(new AdminInquiryMail($inquiry));
 
-        try {
-            if ($adminEmail) {
-                Mail::to($adminEmail)->send(new AdminInquiryMail($inquiry));
-            }
-        } catch (\Throwable $e) {
-            \Log::error('Contact Admin Mail Error: ' . $e->getMessage());
-        }
+        Mail::to($inquiry->email)
+            ->send(new UserInquiryConfirmationMail($inquiry));
 
-        try {
-            Mail::to($inquiry->email)->send(new UserInquiryConfirmationMail($inquiry));
-        } catch (\Throwable $e) {
-            \Log::error('Contact User Mail Error: ' . $e->getMessage());
-        }
-
-        // Yeh change karein - 'message' ki jagah 'success' use karein
-        return back()->with('success', 'Thank you! Your message has been sent successfully.');
+        return back()->with('message', 'Your message has been sent successfully!');
     }
 }
