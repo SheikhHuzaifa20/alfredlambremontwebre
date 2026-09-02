@@ -1,6 +1,6 @@
 @php
-    $copyright = DB::table('mflag')->where('id', '499')->first();
-    $privacy = DB::table('mflag')->where('id', '1973')->first();
+    $copyright = DB::table('m_flag')->where('id', '499')->first();
+    $privacy = DB::table('m_flag')->where('id', '1973')->first();
 @endphp
 <footer>
     <div class="wrap">
