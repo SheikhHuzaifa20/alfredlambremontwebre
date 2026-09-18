@@ -583,10 +583,10 @@ function stripeTokenHandler(token) {
 
 /* ── PayPal ── */
 paypal.Button.render({
-    env: 'sandbox',
+    env: @json(config('services.paypal.mode')),
     style: { label: 'checkout', size: 'responsive', shape: 'rect', color: 'gold' },
     client: {
-        sandbox: 'AV06KMdIerC8pd6_i1gQQlyVoIwV8e_1UZaJKj9-aELaeNXIGMbdR32kDDEWS4gRsAis6SRpUVYC9Jmf',
+        [@json(config('services.paypal.mode'))]: @json(config('services.paypal.client_id')),
     },
     onClick: function() {
         if (!validateForm()) {
