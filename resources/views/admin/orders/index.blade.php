@@ -124,6 +124,8 @@
                                     <th>Customer</th>
                                     <th>Status</th>
                                     <th>Payment Method</th>
+                                    <th>Transaction ID</th>
+                                    <th>Invoice</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
@@ -170,6 +172,8 @@ $(function () {
             { data: 'customer_name', name: 'customer_name' },
             { data: 'order_status', name: 'order_status' },
             { data: 'payment_method', name: 'payment_method' },
+            { data: 'transaction_id', name: 'transaction_id' },
+            { data: 'invoice', orderable: false, searchable: false },
             {
                 data: 'action',
                 orderable: false,

@@ -316,6 +316,12 @@
                                 {{ $payment['name'] ?? ucfirst($order->payment_method) }}
                             </span>
                         </div>
+                        @if(in_array(strtolower(trim($order->payment_method ?? '')), ['stripe', 'paypal'], true))
+                            <div class="mt-2">
+                                <div class="text-muted">Transaction ID</div>
+                                <div class="text-break">{{ trim($order->transaction_id ?? '') ?: '-' }}</div>
+                            </div>
+                        @endif
                     </div>
                 </div>
             </div>

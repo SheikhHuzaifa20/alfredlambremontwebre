@@ -111,15 +111,24 @@ class OrderController extends Controller
                 return ucfirst($row->payment_method ?? '-');
             })
 
+            ->editColumn('transaction_id', function ($row) {
+                return in_array(strtolower(trim($row->payment_method ?? '')), ['stripe', 'paypal'], true)
+                    ? (trim($row->transaction_id ?? '') ?: '-')
+                    : '-';
+            })
+
+            ->addColumn('invoice', function ($row) {
+                return '<a href="' . route('admin.orders.invoice', $row->id) . '" class="btn btn-sm btn-outline-secondary" target="_blank" rel="noopener noreferrer"><i class="fas fa-file-invoice"></i> Invoice</a>';
+            })
+
             ->addColumn('action', function ($row) {
                 return '
                     <a href="' . route('admin.orders.show', $row->id) . '" class="btn btn-sm btn-primary">View</a>
-                    <a href="' . route('admin.orders.invoice', $row->id) . '" class="btn btn-sm btn-outline-secondary" target="_blank"><i class="fas fa-file-invoice"></i> Invoice</a>
                     <button data-id="' . $row->id . '" class="btn btn-sm btn-danger deleteOrders" title="Delete Orders">Delete</button>
                 ';
             })
 
-            ->rawColumns(['order_status', 'action'])
+            ->rawColumns(['order_status', 'invoice', 'action'])
             ->make(true);
     }
 

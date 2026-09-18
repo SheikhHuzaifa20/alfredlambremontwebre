@@ -141,6 +141,9 @@
                     <strong>Date:</strong>
                     {{ $order->created_at ? $order->created_at->format('d M Y, h:i A') : 'N/A' }}<br>
                     <strong>Payment Method:</strong> {{ ucfirst($order->payment_method ?? 'N/A') }}<br>
+                    @if(in_array(strtolower(trim($order->payment_method ?? '')), ['stripe', 'paypal'], true))
+                        <strong>Transaction ID:</strong> {{ trim($order->transaction_id ?? '') ?: '-' }}<br>
+                    @endif
                     <strong>Status:</strong> {{ ucfirst(str_replace('_', ' ', $order->order_status)) }}
                 </div>
             </td>
