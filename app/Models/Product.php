@@ -30,11 +30,19 @@ class Product extends Model
         'status',
         'created_by',
         'text2',
-        // 'short_text',
+        'short_text',
         'paperback_price',
         'ebook_price',
         'rustica_price',
         'taschenbuch_price',
+        'is_lulu_fulfillable',
+        'lulu_pod_package_id',
+        'lulu_interior_url',
+        'lulu_cover_url',
+    ];
+
+    protected $casts = [
+        'is_lulu_fulfillable' => 'boolean',
     ];
 
     public function getPriceAttribute()

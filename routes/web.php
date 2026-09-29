@@ -14,7 +14,7 @@ use App\Http\Controllers\Admin\PageController;
 use App\Http\Controllers\Admin\SectionController;
 use App\Http\Controllers\Admin\UsersController;
 use App\Http\Controllers\Admin\AdminController;
-use App\Http\Controllers\Admin\RoleController;
+use App\Http\Controllers\Admin\RolesController as RoleController;
 use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\InquiriesController;
@@ -53,19 +53,23 @@ Route::get('/admin/logout', [AuthenticatedSessionController::class, 'logout'])->
 
 //==============================================================//
 
-//Log Viewer
-Route::get('log-viewers', '\Arcanedev\LogViewer\Http\Controllers\LogViewerController@index')->name('log-viewers');
-Route::get('log-viewers/logs', '\Arcanedev\LogViewer\Http\Controllers\LogViewerController@listLogs')->name('log-viewers.logs');
-Route::delete('log-viewers/logs/delete', '\Arcanedev\LogViewer\Http\Controllers\LogViewerController@delete')->name('log-viewers.logs.delete');
-Route::get('log-viewers/logs/{date}', '\Arcanedev\LogViewer\Http\Controllers\LogViewerController@show')->name('log-viewers.logs.show');
-Route::get('log-viewers/logs/{date}/download', '\Arcanedev\LogViewer\Http\Controllers\LogViewerController@download')->name('log-viewers.logs.download');
-Route::get('log-viewers/logs/{date}/{level}', '\Arcanedev\LogViewer\Http\Controllers\LogViewerController@showByLevel')->name('log-viewers.logs.filter');
-Route::get('log-viewers/logs/{date}/{level}/search', '\Arcanedev\LogViewer\Http\Controllers\LogViewerController@search')->name('log-viewers.logs.search');
-Route::get('log-viewers/logcheck', '\Arcanedev\LogViewer\Http\Controllers\LogViewerController@logCheck')->name('log-viewers.logcheck');
+//Log Viewer (disabled if package not installed)
+if (class_exists('\Arcanedev\LogViewer\Http\Controllers\LogViewerController')) {
+    Route::get('log-viewers', '\Arcanedev\LogViewer\Http\Controllers\LogViewerController@index')->name('log-viewers');
+    Route::get('log-viewers/logs', '\Arcanedev\LogViewer\Http\Controllers\LogViewerController@listLogs')->name('log-viewers.logs');
+    Route::delete('log-viewers/logs/delete', '\Arcanedev\LogViewer\Http\Controllers\LogViewerController@delete')->name('log-viewers.logs.delete');
+    Route::get('log-viewers/logs/{date}', '\Arcanedev\LogViewer\Http\Controllers\LogViewerController@show')->name('log-viewers.logs.show');
+    Route::get('log-viewers/logs/{date}/download', '\Arcanedev\LogViewer\Http\Controllers\LogViewerController@download')->name('log-viewers.logs.download');
+    Route::get('log-viewers/logs/{date}/{level}', '\Arcanedev\LogViewer\Http\Controllers\LogViewerController@showByLevel')->name('log-viewers.logs.filter');
+    Route::get('log-viewers/logs/{date}/{level}/search', '\Arcanedev\LogViewer\Http\Controllers\LogViewerController@search')->name('log-viewers.logs.search');
+    Route::get('log-viewers/logcheck', '\Arcanedev\LogViewer\Http\Controllers\LogViewerController@logCheck')->name('log-viewers.logcheck');
+}
 
 
-Route::get('auth/{provider}/', 'Auth\SocialLoginController@redirectToProvider');
-Route::get('{provider}/callback', 'Auth\SocialLoginController@handleProviderCallback');
+if (class_exists('App\Http\Controllers\Auth\SocialLoginController')) {
+    Route::get('auth/{provider}/', 'Auth\SocialLoginController@redirectToProvider');
+    Route::get('{provider}/callback', 'Auth\SocialLoginController@handleProviderCallback');
+}
 // Auth::routes();
 
 
@@ -180,10 +184,14 @@ Route::resource('admin/attributes-value', 'Admin\\AttributesValueController');
 Route::post('admin/get-attributes', 'Admin\\AttributesValueController@getdata')->name('get-attributes');
 Route::post('admin/pro-img-id-delet', 'Admin\\AttributesValueController@img_delete')->name('pro-img-id-delet');
 Route::post('admin/delete-product-variant', 'Admin\\AttributesValueController@deleteProVariant')->name('delete.product.variant');
-Route::resource('about/about', 'Admin, User\\AboutController');
+// Route::resource('about/about', 'Admin, User\\AboutController');
 
-Route::resource('traning-videos', 'TraningVideosController');
-Route::resource('upcomingclasses', 'UpcomingclassesController');
+if (class_exists('App\Http\Controllers\TraningVideosController')) {
+    Route::resource('traning-videos', 'TraningVideosController');
+}
+if (class_exists('App\Http\Controllers\UpcomingclassesController')) {
+    Route::resource('upcomingclasses', 'UpcomingclassesController');
+}
 
 //===================== Admin Routes =====================//
 
@@ -288,6 +296,8 @@ Route::middleware(['auth', 'role:1,2']) // Only super_admin & admin can access /
             Route::get('orders/data', [OrderController::class, 'getData'])->name('admin.orders.data');
             Route::delete('orders/bulk-delete', [OrderController::class, 'bulkDelete'])->name('admin.orders.bulkDelete');
             Route::post('orders/{id}/change-status', [OrderController::class, 'changeStatus'])->name('admin.order.changeStatus');
+            Route::post('orders/{id}/lulu-dispatch', [OrderController::class, 'dispatchLulu'])->name('admin.orders.lulu.dispatch');
+            Route::post('orders/{id}/lulu-sync', [OrderController::class, 'syncLulu'])->name('admin.orders.lulu.sync');
             Route::post('orders/address/{address}', [OrderController::class, 'updateAddress'])->name('admin.address.update');
             Route::get('orders/{order}/invoice', [OrderController::class, 'invoice'])->name('admin.orders.invoice');
             Route::resource('orders', OrderController::class)->names('admin.orders');

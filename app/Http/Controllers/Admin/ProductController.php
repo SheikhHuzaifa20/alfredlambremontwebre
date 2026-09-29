@@ -148,12 +148,25 @@ class ProductController extends Controller
 
         try {
 
+            $categoryIds = $request->category_id ?? $request->category_ids;
+            $catString = is_array($categoryIds) ? implode(',', $categoryIds) : ($categoryIds ?? null);
+
             $product = Product::create([
-                'name'         => $request->name,
-                'description'  => $request->description,
-                'category_ids' => $request->category_ids ?? [],
-                'slug'         => Str::slug($request->name),
-                'created_by'   => auth()->id(),
+                'name'                => $request->name,
+                'description'         => $request->description,
+                'category_id'         => $catString,
+                'slug'                => Str::slug($request->name),
+                'text2'               => $request->text2,
+                'short_text'          => $request->short_text,
+                'paperback_price'     => $request->paperback_price,
+                'ebook_price'         => $request->ebook_price,
+                'rustica_price'       => $request->rustica_price,
+                'taschenbuch_price'   => $request->taschenbuch_price,
+                'is_lulu_fulfillable' => $request->has('is_lulu_fulfillable') ? 1 : 0,
+                'lulu_pod_package_id' => $request->filled('lulu_pod_package_id') ? trim($request->lulu_pod_package_id) : null,
+                'lulu_interior_url'   => $request->filled('lulu_interior_url') ? trim($request->lulu_interior_url) : null,
+                'lulu_cover_url'      => $request->filled('lulu_cover_url') ? trim($request->lulu_cover_url) : null,
+                'created_by'          => auth()->id(),
             ]);
 
             if ($request->hasFile('image')) {
@@ -218,12 +231,25 @@ class ProductController extends Controller
 
         try {
 
+            $categoryIds = $request->category_id ?? $request->category_ids;
+            $catString = is_array($categoryIds) ? implode(',', $categoryIds) : ($categoryIds ?? $product->category_id);
+
             $product->update([
-                'name'         => $request->name,
-                'description'  => $request->description,
-                'category_ids' => $request->category_ids ?? [],
-                'slug'         => Str::slug($request->name),
-                'updated_by'   => auth()->id(),
+                'name'                => $request->name,
+                'description'         => $request->description,
+                'category_id'         => $catString,
+                'slug'                => Str::slug($request->name),
+                'text2'               => $request->text2 ?? $product->text2,
+                'short_text'          => $request->short_text ?? $product->short_text,
+                'paperback_price'     => $request->paperback_price ?? $product->paperback_price,
+                'ebook_price'         => $request->ebook_price ?? $product->ebook_price,
+                'rustica_price'       => $request->rustica_price ?? $product->rustica_price,
+                'taschenbuch_price'   => $request->taschenbuch_price ?? $product->taschenbuch_price,
+                'is_lulu_fulfillable' => $request->has('is_lulu_fulfillable') ? 1 : 0,
+                'lulu_pod_package_id' => $request->filled('lulu_pod_package_id') ? trim($request->lulu_pod_package_id) : null,
+                'lulu_interior_url'   => $request->filled('lulu_interior_url') ? trim($request->lulu_interior_url) : null,
+                'lulu_cover_url'      => $request->filled('lulu_cover_url') ? trim($request->lulu_cover_url) : null,
+                'updated_by'          => auth()->id(),
             ]);
 
             if ($request->hasFile('image')) {

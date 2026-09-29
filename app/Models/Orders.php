@@ -32,4 +32,11 @@ class Orders extends Model
     {
         return $this->belongsTo(Address::class, 'billing_address_id');
     }
+
+    public function hasLuluProducts(): bool
+    {
+        return $this->order_products->contains(function ($item) {
+            return $item->product && $item->product->is_lulu_fulfillable;
+        });
+    }
 }

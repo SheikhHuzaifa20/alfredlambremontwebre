@@ -277,4 +277,72 @@ class OrderController extends Controller
 
         return $pdf->stream("invoice-order-{$order->id}.pdf");
     }
+
+    /**
+     * Dispatch or retry Lulu print job manually.
+     */
+    public function dispatchLulu($id)
+    {
+        $order = Orders::with('order_products.product')->findOrFail($id);
+
+        $luluService = app(\App\Services\LuluService::class);
+        $result = $luluService->createPrintJob($order);
+
+        $order->refresh();
+
+        if ($result['success']) {
+            log_activity('lulu_dispatch', Orders::class, $order->id, "Dispatched Lulu Print Job #{$order->lulu_job_id}");
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Lulu Print Job #' . $order->lulu_job_id . ' created successfully!',
+                'lulu_job_id' => $order->lulu_job_id,
+                'lulu_status' => $order->lulu_status,
+                'lulu_error'  => null,
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => $result['message'] ?? 'Failed to create Lulu Print Job.',
+            'lulu_error' => $order->lulu_error_message,
+        ], 400);
+    }
+
+    /**
+     * Sync Lulu print job status and tracking info manually.
+     */
+    public function syncLulu($id)
+    {
+        $order = Orders::findOrFail($id);
+
+        if (empty($order->lulu_job_id)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'This order does not have a Lulu Print Job ID yet.',
+            ], 400);
+        }
+
+        $luluService = app(\App\Services\LuluService::class);
+        $result = $luluService->syncOrderStatus($order);
+
+        $order->refresh();
+
+        if ($result['success']) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Lulu status synced successfully!',
+                'lulu_status' => $order->lulu_status,
+                'lulu_error'  => $order->lulu_error_message,
+                'tracking_number' => $order->lulu_tracking_number,
+                'tracking_url' => $order->lulu_tracking_url,
+                'order_status' => $order->order_status,
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => $result['message'] ?? 'Failed to sync with Lulu API.',
+        ], 400);
+    }
 }

@@ -444,6 +444,64 @@
                                         </div>
                                     </div>
                                 </div>
+                        {{-- ══ Lulu Print-on-Demand (POD) Settings ══ --}}
+                        <div class="card border border-primary shadow-sm">
+                            <div class="card-header bg-light">
+                                <h4 class="card-title text-primary" id="basic-layout-form">
+                                    <i class="fas fa-book-reader mr-1"></i> Lulu Print-on-Demand (POD)
+                                </h4>
+                                <a class="heading-elements-toggle"><i class="la la-ellipsis-v font-medium-3"></i></a>
+                                <div class="heading-elements">
+                                    <ul class="list-inline mb-0">
+                                        <li><a data-action="collapse"><i class="ft-minus"></i></a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="card-content collapse show">
+                                <div class="card-body">
+                                    <div class="form-body">
+                                        <div class="row">
+                                            <div class="col-md-12 mb-2">
+                                                <label class="d-block font-weight-bold">Enable Lulu Fulfillment</label>
+                                                <label class="switch">
+                                                    <input type="checkbox" name="is_lulu_fulfillable" value="1" id="is_lulu_fulfillable" {{ old('is_lulu_fulfillable') ? 'checked' : '' }}>
+                                                    <span class="slider"></span>
+                                                </label>
+                                                <small class="text-muted d-block mt-1">Automatically send to Lulu when ordered</small>
+                                            </div>
+
+                                            <div class="col-md-12">
+                                                <div class="form-group">
+                                                    <label for="lulu_pod_package_id">Lulu POD Package ID</label>
+                                                    <input class="form-control" name="lulu_pod_package_id" type="text"
+                                                        id="lulu_pod_package_id" placeholder="e.g. 0600X0900BWSTDPB060UW444MXX"
+                                                        value="{{ old('lulu_pod_package_id') }}">
+                                                    <small class="text-muted">Trim size, binding, paper, color code from Lulu</small>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-12">
+                                                <div class="form-group">
+                                                    <label for="lulu_interior_url">Interior PDF URL</label>
+                                                    <input class="form-control" name="lulu_interior_url" type="url"
+                                                        id="lulu_interior_url" placeholder="https://example.com/books/interior.pdf"
+                                                        value="{{ old('lulu_interior_url') }}">
+                                                    <small class="text-muted">Direct public URL to print-ready interior PDF</small>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-12">
+                                                <div class="form-group">
+                                                    <label for="lulu_cover_url">Cover PDF URL</label>
+                                                    <input class="form-control" name="lulu_cover_url" type="url"
+                                                        id="lulu_cover_url" placeholder="https://example.com/books/cover.pdf"
+                                                        value="{{ old('lulu_cover_url') }}">
+                                                    <small class="text-muted">Direct public URL to print-ready cover PDF</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>

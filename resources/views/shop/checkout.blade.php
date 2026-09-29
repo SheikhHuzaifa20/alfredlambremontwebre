@@ -111,7 +111,20 @@
     color: #E08A7A;
     margin-top: 5px;
 }
-.co-form select { appearance: none; }
+.co-form select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23EDE7DA' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 38px;
+    cursor: pointer;
+}
+.co-form select option {
+    background: #0B1026;
+    color: #EDE7DA;
+}
 
 /* Login nudge */
 .login-nudge {
@@ -325,6 +338,16 @@
         </div>
         @endif
 
+        @if (Session::has('flash_message'))
+        <div class="co-alert {{ Session::get('alert-class') == 'alert-success' ? 'co-alert-success' : 'co-alert-danger' }}">
+            {{ Session::get('flash_message') }}
+        </div>
+        @endif
+
+        @if (Session::has('error'))
+        <div class="co-alert co-alert-danger">{{ Session::get('error') }}</div>
+        @endif
+
         @if (Session::has('stripe_error'))
         <div class="co-alert co-alert-danger">{{ Session::get('stripe_error') }}</div>
         @endif
@@ -396,15 +419,85 @@
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="state">State / Region</label>
-                            <input id="state" name="state" type="text"
-                                   placeholder="State" value="{{ old('state') }}">
-                        </div>
-                        <div class="form-group">
                             <label for="country">Country *</label>
-                            <input id="country" name="country" type="text" required
-                                   placeholder="United States" value="{{ old('country') }}">
+                            <select id="country" name="country" required class="co-select">
+                                @php
+                                    $allCountries = [
+                                        "United States",
+                                        "Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Antigua and Barbuda", "Argentina", "Armenia", "Australia", "Austria", "Azerbaijan",
+                                        "Bahamas", "Bahrain", "Bangladesh", "Barbados", "Belarus", "Belgium", "Belize", "Benin", "Bhutan", "Bolivia", "Bosnia and Herzegovina", "Botswana", "Brazil", "Brunei", "Bulgaria", "Burkina Faso", "Burundi",
+                                        "Cabo Verde", "Cambodia", "Cameroon", "Canada", "Central African Republic", "Chad", "Chile", "China", "Colombia", "Comoros", "Congo", "Costa Rica", "Croatia", "Cuba", "Cyprus", "Czech Republic",
+                                        "Democratic Republic of the Congo", "Denmark", "Djibouti", "Dominica", "Dominican Republic",
+                                        "Ecuador", "Egypt", "El Salvador", "Equatorial Guinea", "Eritrea", "Estonia", "Eswatini", "Ethiopia",
+                                        "Fiji", "Finland", "France",
+                                        "Gabon", "Gambia", "Georgia", "Germany", "Ghana", "Greece", "Grenada", "Guatemala", "Guinea", "Guinea-Bissau", "Guyana",
+                                        "Haiti", "Honduras", "Hong Kong", "Hungary",
+                                        "Iceland", "India", "Indonesia", "Iran", "Iraq", "Ireland", "Israel", "Italy", "Ivory Coast",
+                                        "Jamaica", "Japan", "Jordan",
+                                        "Kazakhstan", "Kenya", "Kiribati", "Kosovo", "Kuwait", "Kyrgyzstan",
+                                        "Laos", "Latvia", "Lebanon", "Lesotho", "Liberia", "Libya", "Liechtenstein", "Lithuania", "Luxembourg",
+                                        "Madagascar", "Malawi", "Malaysia", "Maldives", "Mali", "Malta", "Marshall Islands", "Mauritania", "Mauritius", "Mexico", "Micronesia", "Moldova", "Monaco", "Mongolia", "Montenegro", "Morocco", "Mozambique", "Myanmar",
+                                        "Namibia", "Nauru", "Nepal", "Netherlands", "New Zealand", "Nicaragua", "Niger", "Nigeria", "North Korea", "North Macedonia", "Norway",
+                                        "Oman",
+                                        "Pakistan", "Palau", "Palestine", "Panama", "Papua New Guinea", "Paraguay", "Peru", "Philippines", "Poland", "Portugal",
+                                        "Qatar",
+                                        "Romania", "Russia", "Rwanda",
+                                        "Saint Kitts and Nevis", "Saint Lucia", "Saint Vincent and the Grenadines", "Samoa", "San Marino", "Sao Tome and Principe", "Saudi Arabia", "Senegal", "Serbia", "Seychelles", "Sierra Leone", "Singapore", "Slovakia", "Slovenia", "Solomon Islands", "Somalia", "South Africa", "South Korea", "South Sudan", "Spain", "Sri Lanka", "Sudan", "Suriname", "Sweden", "Switzerland", "Syria",
+                                        "Taiwan", "Tajikistan", "Tanzania", "Thailand", "Timor-Leste", "Togo", "Tonga", "Trinidad and Tobago", "Tunisia", "Turkey", "Turkmenistan", "Tuvalu",
+                                        "Uganda", "Ukraine", "United Arab Emirates", "United Kingdom", "Uruguay", "Uzbekistan",
+                                        "Vanuatu", "Vatican City", "Venezuela", "Vietnam",
+                                        "Yemen",
+                                        "Zambia", "Zimbabwe"
+                                    ];
+                                    $selectedCountry = old('country', 'United States');
+                                @endphp
+                                @foreach($allCountries as $c)
+                                    <option value="{{ $c }}" {{ strcasecmp($selectedCountry, $c) === 0 ? 'selected' : '' }}>{{ $c }}</option>
+                                @endforeach
+                            </select>
                             @error('country')<span class="err-msg">{{ $message }}</span>@enderror
+                        </div>
+
+                        <div class="form-group">
+                            <label for="state">State / Province <span id="state-asterisk">*</span></label>
+
+                            {{-- US States Dropdown --}}
+                            <div id="us-state-wrapper">
+                                <select id="state_select" name="state" required class="co-select">
+                                    <option value="">Select State</option>
+                                    @php
+                                        $usStates = [
+                                            'AL' => 'Alabama', 'AK' => 'Alaska', 'AZ' => 'Arizona', 'AR' => 'Arkansas',
+                                            'CA' => 'California', 'CO' => 'Colorado', 'CT' => 'Connecticut', 'DE' => 'Delaware',
+                                            'DC' => 'District of Columbia', 'FL' => 'Florida', 'GA' => 'Georgia', 'HI' => 'Hawaii',
+                                            'ID' => 'Idaho', 'IL' => 'Illinois', 'IN' => 'Indiana', 'IA' => 'Iowa',
+                                            'KS' => 'Kansas', 'KY' => 'Kentucky', 'LA' => 'Louisiana', 'ME' => 'Maine',
+                                            'MD' => 'Maryland', 'MA' => 'Massachusetts', 'MI' => 'Michigan', 'MN' => 'Minnesota',
+                                            'MS' => 'Mississippi', 'MO' => 'Missouri', 'MT' => 'Montana', 'NE' => 'Nebraska',
+                                            'NV' => 'Nevada', 'NH' => 'New Hampshire', 'NJ' => 'New Jersey', 'NM' => 'New Mexico',
+                                            'NY' => 'New York', 'NC' => 'North Carolina', 'ND' => 'North Dakota', 'OH' => 'Ohio',
+                                            'OK' => 'Oklahoma', 'OR' => 'Oregon', 'PA' => 'Pennsylvania', 'RI' => 'Rhode Island',
+                                            'SC' => 'South Carolina', 'SD' => 'South Dakota', 'TN' => 'Tennessee', 'TX' => 'Texas',
+                                            'UT' => 'Utah', 'VT' => 'Vermont', 'VA' => 'Virginia', 'WA' => 'Washington',
+                                            'WV' => 'West Virginia', 'WI' => 'Wisconsin', 'WY' => 'Wyoming'
+                                        ];
+                                        $selectedState = old('state', 'NY');
+                                    @endphp
+                                    @foreach($usStates as $code => $name)
+                                        <option value="{{ $code }}" {{ (strtoupper($selectedState) == $code || strtolower($selectedState) == strtolower($name)) ? 'selected' : '' }}>
+                                            {{ $name }} ({{ $code }})
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            {{-- Non-US States Text Input --}}
+                            <div id="intl-state-wrapper" style="display: none;">
+                                <input id="state_text" type="text"
+                                       placeholder="State / Province / Region" value="{{ old('state') }}" disabled>
+                            </div>
+
+                            @error('state')<span class="err-msg">{{ $message }}</span>@enderror
                         </div>
                     </div>
 
@@ -465,6 +558,9 @@
                         <button class="co-pay-tab-btn" data-tab="paypal" id="tabPaypal">
                             PayPal
                         </button>
+                        {{-- <button class="co-pay-tab-btn" data-tab="cod" id="tabCod">
+                            Test Order / COD
+                        </button> --}}
                     </div>
 
                     {{-- Stripe --}}
@@ -494,6 +590,16 @@
                         </p>
                         <input type="hidden" name="price_pp"      value="{{ $subtotal }}">
                         <div id="paypal-button-container-popup"></div>
+                    </div>
+
+                    {{-- Test Order / Cash on Delivery --}}
+                    <div class="co-pay-body" id="bodyCod">
+                        <p style="font-family:var(--mono);font-size:11.5px;color:var(--parchment-dim);margin-bottom:16px">
+                            Instant checkout without credit card. Ideal for testing Lulu Print API fulfillment.
+                        </p>
+                        <button class="co-pay-btn" type="button" id="cod-submit">
+                            Place Test Order (${{ number_format($subtotal, 2) }})
+                        </button>
                     </div>
                 </div>
 
@@ -581,6 +687,18 @@ function stripeTokenHandler(token) {
     form.submit();
 }
 
+/* ── COD / Test Order ── */
+const codBtn = document.getElementById('cod-submit');
+if (codBtn) {
+    codBtn.addEventListener('click', function() {
+        if (!validateForm()) return;
+        this.disabled = true;
+        this.textContent = 'Processing Order…';
+        document.getElementById('payment_method').value = 'cod';
+        document.getElementById('order-place').submit();
+    });
+}
+
 /* ── PayPal ── */
 paypal.Button.render({
     env: @json(config('services.paypal.mode')),
@@ -612,10 +730,63 @@ paypal.Button.render({
     }
 }, '#paypal-button-container-popup');
 
+/* ── Dynamic Country & State handler ── */
+(function() {
+    const countryEl = document.getElementById('country');
+    const usWrapper = document.getElementById('us-state-wrapper');
+    const intlWrapper = document.getElementById('intl-state-wrapper');
+    const stateSelect = document.getElementById('state_select');
+    const stateText = document.getElementById('state_text');
+    const stateAsterisk = document.getElementById('state-asterisk');
+
+    function handleCountryChange() {
+        if (!countryEl) return;
+        const val = countryEl.value.trim();
+        const isUS = val === 'United States' || val === 'US' || val === 'USA';
+
+        if (isUS) {
+            if (usWrapper) usWrapper.style.display = 'block';
+            if (intlWrapper) intlWrapper.style.display = 'none';
+
+            if (stateSelect) {
+                stateSelect.disabled = false;
+                stateSelect.setAttribute('name', 'state');
+                stateSelect.required = true;
+            }
+            if (stateText) {
+                stateText.disabled = true;
+                stateText.removeAttribute('name');
+                stateText.required = false;
+            }
+            if (stateAsterisk) stateAsterisk.style.display = 'inline';
+        } else {
+            if (usWrapper) usWrapper.style.display = 'none';
+            if (intlWrapper) intlWrapper.style.display = 'block';
+
+            if (stateSelect) {
+                stateSelect.disabled = true;
+                stateSelect.removeAttribute('name');
+                stateSelect.required = false;
+            }
+            if (stateText) {
+                stateText.disabled = false;
+                stateText.setAttribute('name', 'state');
+                stateText.required = false;
+            }
+            if (stateAsterisk) stateAsterisk.style.display = 'none';
+        }
+    }
+
+    if (countryEl) {
+        countryEl.addEventListener('change', handleCountryChange);
+        handleCountryChange();
+    }
+})();
+
 /* ── Form validation ── */
 function validateForm() {
     let ok = true;
-    document.querySelectorAll('#order-place input[required]').forEach(inp => {
+    document.querySelectorAll('#order-place input[required]:not(:disabled), #order-place select[required]:not(:disabled)').forEach(inp => {
         if (!inp.value.trim()) {
             inp.style.borderColor = '#E08A7A';
             ok = false;

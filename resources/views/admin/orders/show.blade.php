@@ -218,6 +218,73 @@
                 </div>
             </div>
             <div class="col-lg-4 col-md-4">
+                {{-- ══ Lulu Print API Fulfillment Card ══ --}}
+                <div class="card mb-3 border border-primary shadow-sm" id="lulu-fulfillment-card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h5 class="card-title text-uppercase mb-0 text-primary font-weight-bold">
+                                <i class="fas fa-book-reader mr-1"></i> Lulu Fulfillment
+                            </h5>
+                            @php
+                                $lStatus = strtoupper((string) ($order->lulu_status ?? ''));
+                                $badgeClass = match ($lStatus) {
+                                    'SHIPPED', 'DELIVERED' => 'success',
+                                    'IN_PRODUCTION', 'ACCEPTED' => 'info',
+                                    'CREATED', 'UNPAID', 'PAYMENT_IN_PROCESS' => 'warning',
+                                    'REJECTED', 'CANCELED', 'ERROR' => 'danger',
+                                    default => 'secondary'
+                                };
+                            @endphp
+                            <span id="lulu-status-badge" class="badge badge-{{ $badgeClass }} px-2 py-1">
+                                {{ $order->lulu_status ?: 'Not Dispatched' }}
+                            </span>
+                        </div>
+
+                        <div class="small mt-3">
+                            <div class="mb-1">
+                                <span class="text-muted">Print Job ID:</span>
+                                <strong id="lulu-job-id">{{ $order->lulu_job_id ?: 'Not assigned' }}</strong>
+                            </div>
+
+                            @if($order->lulu_cost)
+                            <div class="mb-1">
+                                <span class="text-muted">Lulu Cost:</span>
+                                <strong>${{ number_format($order->lulu_cost, 2) }}</strong>
+                            </div>
+                            @endif
+
+                            <div class="mb-1" id="lulu-tracking-wrapper" style="{{ empty($order->lulu_tracking_number) ? 'display:none;' : '' }}">
+                                <span class="text-muted">Tracking #:</span>
+                                <strong id="lulu-tracking-no">{{ $order->lulu_tracking_number }}</strong>
+                                <span id="lulu-tracking-link-wrap">
+                                    @if(!empty($order->lulu_tracking_url))
+                                        <a id="lulu-tracking-link" href="{{ $order->lulu_tracking_url }}" target="_blank" class="ml-1 text-primary font-weight-bold">
+                                            <i class="fas fa-external-link-alt"></i> Track
+                                        </a>
+                                    @endif
+                                </span>
+                            </div>
+
+                            <div class="alert alert-danger py-1 px-2 mt-2 small" id="lulu-error-box" style="{{ empty($order->lulu_error_message) ? 'display:none;' : '' }}">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <span id="lulu-error-text">{{ $order->lulu_error_message }}</span>
+                            </div>
+                        </div>
+
+                        <hr class="my-2">
+
+                        <div class="d-flex justify-content-between mt-2">
+                            <button type="button" class="btn btn-sm btn-outline-primary" id="btn-sync-lulu" data-id="{{ $order->id }}" {{ empty($order->lulu_job_id) ? 'disabled' : '' }}>
+                                <i class="fas fa-sync-alt mr-1"></i> Sync Status
+                            </button>
+
+                            <button type="button" class="btn btn-sm btn-primary" id="btn-dispatch-lulu" data-id="{{ $order->id }}">
+                                <i class="fas fa-paper-plane mr-1"></i> <span id="btn-dispatch-text">{{ !empty($order->lulu_job_id) ? 'Retry Dispatch' : 'Send to Lulu' }}</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="card mb-3">
                     <div class="card-body">
 
@@ -450,6 +517,108 @@
                     },
                     success: function () {
                         location.reload();
+                    }
+                });
+            });
+
+            // ══ Lulu API Dispatch & Retry ══
+            $('#btn-dispatch-lulu').on('click', function () {
+                let btn = $(this);
+                let orderId = btn.data('id');
+                let originalHtml = btn.html();
+
+                btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-1"></i> Sending...');
+
+                $.ajax({
+                    url: "{{ route('admin.orders.lulu.dispatch', ':id') }}".replace(':id', orderId),
+                    type: "POST",
+                    data: {
+                        _token: "{{ csrf_token() }}"
+                    },
+                    success: function (res) {
+                        btn.prop('disabled', false).html('<i class="fas fa-paper-plane mr-1"></i> Retry Dispatch');
+                        $('#btn-sync-lulu').prop('disabled', false);
+
+                        if (res.success) {
+                            $('#lulu-status-badge')
+                                .removeClass()
+                                .addClass('badge badge-info px-2 py-1')
+                                .text(res.lulu_status || 'CREATED');
+
+                            $('#lulu-job-id').text(res.lulu_job_id);
+                            $('#lulu-error-box').hide();
+                            $('#lulu-error-text').text('');
+
+                            alert(res.message);
+                        }
+                    },
+                    error: function (xhr) {
+                        btn.prop('disabled', false).html(originalHtml);
+                        let err = xhr.responseJSON?.message || 'Error communicating with Lulu API.';
+                        $('#lulu-status-badge')
+                            .removeClass()
+                            .addClass('badge badge-danger px-2 py-1')
+                            .text('Failed');
+
+                        $('#lulu-error-text').text(err);
+                        $('#lulu-error-box').show();
+                        alert('Lulu Error: ' + err);
+                    }
+                });
+            });
+
+            // ══ Lulu API Status Sync ══
+            $('#btn-sync-lulu').on('click', function () {
+                let btn = $(this);
+                let orderId = btn.data('id');
+                let originalHtml = btn.html();
+
+                btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-1"></i> Syncing...');
+
+                $.ajax({
+                    url: "{{ route('admin.orders.lulu.sync', ':id') }}".replace(':id', orderId),
+                    type: "POST",
+                    data: {
+                        _token: "{{ csrf_token() }}"
+                    },
+                    success: function (res) {
+                        btn.prop('disabled', false).html(originalHtml);
+
+                        if (res.success) {
+                            let s = (res.lulu_status || '').toUpperCase();
+                            let badgeClass = (s === 'SHIPPED' || s === 'DELIVERED') ? 'success' : ((s === 'REJECTED' || s === 'ERROR' || s === 'CANCELED') ? 'danger' : 'info');
+
+                            $('#lulu-status-badge')
+                                .removeClass()
+                                .addClass('badge badge-' + badgeClass + ' px-2 py-1')
+                                .text(res.lulu_status);
+
+                            if (res.tracking_number) {
+                                $('#lulu-tracking-no').text(res.tracking_number);
+                                if (res.tracking_url) {
+                                    $('#lulu-tracking-link-wrap').html('<a id="lulu-tracking-link" href="' + res.tracking_url + '" target="_blank" class="ml-1 text-primary font-weight-bold"><i class="fas fa-external-link-alt"></i> Track</a>');
+                                }
+                                $('#lulu-tracking-wrapper').show();
+                            }
+
+                            if (res.order_status) {
+                                let formatted = res.order_status.charAt(0).toUpperCase() + res.order_status.slice(1);
+                                $('#show-status').text(formatted);
+                            }
+
+                            if (res.lulu_error) {
+                                $('#lulu-error-text').text(res.lulu_error);
+                                $('#lulu-error-box').show();
+                            } else {
+                                $('#lulu-error-box').hide();
+                            }
+
+                            alert(res.message);
+                        }
+                    },
+                    error: function (xhr) {
+                        btn.prop('disabled', false).html(originalHtml);
+                        alert(xhr.responseJSON?.message || 'Sync failed.');
                     }
                 });
             });

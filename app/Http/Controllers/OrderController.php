@@ -410,9 +410,10 @@ class OrderController extends Controller
 				// Check if token already used
 				$usedTokens = Session::get('used_stripe_tokens', []);
 				if (in_array($stripeToken, $usedTokens)) {
-					Session::flash('flash_message', 'This payment token has already been used.');
+					$msg = 'This payment token has already been used.';
+					Session::flash('flash_message', $msg);
 					Session::flash('alert-class', 'alert-danger');
-					return redirect()->back()->withInput();
+					return redirect()->back()->withInput()->with('error', $msg)->with('stripe_error', $msg);
 				}
 
 				\Stripe\Stripe::setApiKey(env('STRIPE_SECRET'));
@@ -447,14 +448,17 @@ class OrderController extends Controller
 					$order->transaction_id = $chargeJson['balance_transaction'];
 					$order->order_status = 'pending';
 				} else {
-					Session::flash('flash_message', 'Payment failed. Please try again.');
+					$msg = 'Payment failed. Please try again.';
+					Session::flash('flash_message', $msg);
 					Session::flash('alert-class', 'alert-danger');
-					return redirect()->back()->withInput();
+					return redirect()->back()->withInput()->with('error', $msg)->with('stripe_error', $msg);
 				}
-			} catch (\Exception $e) {
-				Session::flash('flash_message', 'Payment Error: ' . $e->getMessage());
+			} catch (\Throwable $e) {
+				\Illuminate\Support\Facades\Log::error('Payment Error on Checkout: ' . $e->getMessage());
+				$msg = 'Payment Error: ' . $e->getMessage();
+				Session::flash('flash_message', $msg);
 				Session::flash('alert-class', 'alert-danger');
-				return redirect()->back()->withInput();
+				return redirect()->back()->withInput()->with('error', $msg)->with('stripe_error', $msg);
 			}
 		}
 
@@ -486,6 +490,16 @@ class OrderController extends Controller
 			}
 
 			// ============================================
+			// LULU PRINT API AUTOMATIC FULFILLMENT (Option A)
+			// ============================================
+			try {
+				$luluService = app(\App\Services\LuluService::class);
+				$luluService->createPrintJob($savedOrder);
+			} catch (\Throwable $e) {
+				\Illuminate\Support\Facades\Log::error('Lulu fulfillment automatic trigger failed for order #' . $savedOrder->id . ': ' . $e->getMessage());
+			}
+
+			// ============================================
 			// CLEAR CART & SESSION
 			// ============================================
 			Session::forget('cart');
@@ -496,9 +510,10 @@ class OrderController extends Controller
 
 			return redirect('/')->with('success', 'Order placed successfully!');
 		} else {
-			Session::flash('flash_message', 'Something went wrong. Please try again.');
+			$msg = 'Something went wrong. Please try again.';
+			Session::flash('flash_message', $msg);
 			Session::flash('alert-class', 'alert-danger');
-			return redirect()->back()->withInput();
+			return redirect()->back()->withInput()->with('error', $msg);
 		}
 	}
 
