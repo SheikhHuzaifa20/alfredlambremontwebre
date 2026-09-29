@@ -52,6 +52,96 @@
         .image-privew img {
             height: 100px;
         }
+
+        /* ══ Select2 Multi-Select & Dropdown Overrides ══ */
+        .select2-container--default .select2-selection--multiple {
+            background-color: #ffffff !important;
+            border: 1px solid #d9d9d9 !important;
+            border-radius: 4px !important;
+            min-height: 40px !important;
+            padding: 2px 6px !important;
+            cursor: pointer !important;
+        }
+
+        .select2-container--default.select2-container--focus .select2-selection--multiple {
+            border-color: #666ee8 !important;
+            box-shadow: 0 0 0 2px rgba(102, 110, 232, 0.15) !important;
+        }
+
+        .select2-container--default .select2-selection--multiple .select2-selection__choice {
+            background-color: #666ee8 !important;
+            border: 1px solid #5a62d4 !important;
+            color: #ffffff !important;
+            border-radius: 4px !important;
+            padding: 3px 8px 3px 8px !important;
+            font-size: 13px !important;
+            font-weight: 500 !important;
+            margin: 3px 5px 3px 0 !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            line-height: 1.4 !important;
+        }
+
+        /* Remove default white button/box styling on close cross */
+        .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+            background: transparent !important;
+            background-color: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            outline: none !important;
+            color: #ffffff !important;
+            font-size: 16px !important;
+            font-weight: bold !important;
+            line-height: 1 !important;
+            padding: 0 4px 0 0 !important;
+            margin-right: 5px !important;
+            margin-left: 0 !important;
+            cursor: pointer !important;
+            float: none !important;
+            display: inline-block !important;
+            opacity: 0.85 !important;
+        }
+
+        .select2-container--default .select2-selection--multiple .select2-selection__choice__remove:hover {
+            color: #ffdddd !important;
+            opacity: 1 !important;
+            background: transparent !important;
+            background-color: transparent !important;
+        }
+
+        /* Dropdown panel & options text readability */
+        .select2-dropdown {
+            background-color: #ffffff !important;
+            border: 1px solid #dcdfe6 !important;
+            border-radius: 4px !important;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12) !important;
+            z-index: 1051 !important;
+        }
+
+        .select2-container--default .select2-results__option {
+            color: #2b2f3a !important; /* Rich, readable dark text */
+            font-size: 13.5px !important;
+            padding: 8px 12px !important;
+            transition: background 0.15s ease, color 0.15s ease !important;
+        }
+
+        .select2-container--default .select2-results__option--highlighted[aria-selected] {
+            background-color: #666ee8 !important;
+            color: #ffffff !important;
+        }
+
+        .select2-container--default .select2-results__option[aria-selected="true"] {
+            background-color: #f0f2fb !important;
+            color: #666ee8 !important;
+            font-weight: 600 !important;
+        }
+
+        .select2-container--default .select2-search--dropdown .select2-search__field {
+            border: 1px solid #d9d9d9 !important;
+            border-radius: 4px !important;
+            padding: 6px 10px !important;
+            outline: none !important;
+        }
     </style>
     @stack('before-css')
     <link href="{{asset('assets/css/custom.css')}}" rel="stylesheet">
