@@ -219,31 +219,48 @@
             </div>
             <div class="col-lg-4 col-md-4">
                 {{-- ══ Lulu Print API Fulfillment Card ══ --}}
-                <div class="card mb-3 border border-primary shadow-sm" id="lulu-fulfillment-card">
+                @php
+                    $hasLuluFulfillable = $order->hasLuluProducts();
+                    $isEbookOnly = !$hasLuluFulfillable && $order->order_products->contains(function ($item) {
+                        $format = strtolower(trim((string) ($item->mat_language ?? '')));
+                        return $format === 'ebook' || str_contains($format, 'ebook');
+                    });
+                    $lStatus = strtoupper((string) ($order->lulu_status ?? ''));
+                    $badgeClass = match ($lStatus) {
+                        'SHIPPED', 'DELIVERED' => 'success',
+                        'IN_PRODUCTION', 'ACCEPTED' => 'info',
+                        'CREATED', 'UNPAID', 'PAYMENT_IN_PROCESS' => 'warning',
+                        'REJECTED', 'CANCELED', 'ERROR' => 'danger',
+                        default => 'secondary'
+                    };
+                @endphp
+                <div class="card mb-3 border {{ $isEbookOnly ? 'border-secondary' : 'border-primary' }} shadow-sm" id="lulu-fulfillment-card">
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center mb-2">
-                            <h5 class="card-title text-uppercase mb-0 text-primary font-weight-bold">
+                            <h5 class="card-title text-uppercase mb-0 {{ $isEbookOnly ? 'text-muted' : 'text-primary' }} font-weight-bold">
                                 <i class="fas fa-book-reader mr-1"></i> Lulu Fulfillment
                             </h5>
-                            @php
-                                $lStatus = strtoupper((string) ($order->lulu_status ?? ''));
-                                $badgeClass = match ($lStatus) {
-                                    'SHIPPED', 'DELIVERED' => 'success',
-                                    'IN_PRODUCTION', 'ACCEPTED' => 'info',
-                                    'CREATED', 'UNPAID', 'PAYMENT_IN_PROCESS' => 'warning',
-                                    'REJECTED', 'CANCELED', 'ERROR' => 'danger',
-                                    default => 'secondary'
-                                };
-                            @endphp
-                            <span id="lulu-status-badge" class="badge badge-{{ $badgeClass }} px-2 py-1">
-                                {{ $order->lulu_status ?: 'Not Dispatched' }}
-                            </span>
+                            @if($isEbookOnly && empty($order->lulu_job_id))
+                                <span id="lulu-status-badge" class="badge badge-secondary px-2 py-1">
+                                    Disabled (eBook)
+                                </span>
+                            @else
+                                <span id="lulu-status-badge" class="badge badge-{{ $badgeClass }} px-2 py-1">
+                                    {{ $order->lulu_status ?: 'Not Dispatched' }}
+                                </span>
+                            @endif
                         </div>
 
                         <div class="small mt-3">
+                            @if($isEbookOnly && empty($order->lulu_job_id))
+                                <div class="alert alert-light text-muted py-2 px-2 small border mb-2">
+                                    <i class="fas fa-info-circle text-info mr-1"></i> Lulu Print Fulfillment is <strong>disabled</strong> because this order contains only digital <strong>eBook(s)</strong> (no physical printing required).
+                                </div>
+                            @endif
+
                             <div class="mb-1">
                                 <span class="text-muted">Print Job ID:</span>
-                                <strong id="lulu-job-id">{{ $order->lulu_job_id ?: 'Not assigned' }}</strong>
+                                <strong id="lulu-job-id">{{ $order->lulu_job_id ?: ($isEbookOnly ? 'N/A (eBook)' : 'Not assigned') }}</strong>
                             </div>
 
                             @if($order->lulu_cost)
@@ -274,13 +291,19 @@
                         <hr class="my-2">
 
                         <div class="d-flex justify-content-between mt-2">
-                            <button type="button" class="btn btn-sm btn-outline-primary" id="btn-sync-lulu" data-id="{{ $order->id }}" {{ empty($order->lulu_job_id) ? 'disabled' : '' }}>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" id="btn-sync-lulu" data-id="{{ $order->id }}" {{ empty($order->lulu_job_id) ? 'disabled' : '' }}>
                                 <i class="fas fa-sync-alt mr-1"></i> Sync Status
                             </button>
 
-                            <button type="button" class="btn btn-sm btn-primary" id="btn-dispatch-lulu" data-id="{{ $order->id }}">
-                                <i class="fas fa-paper-plane mr-1"></i> <span id="btn-dispatch-text">{{ !empty($order->lulu_job_id) ? 'Retry Dispatch' : 'Send to Lulu' }}</span>
-                            </button>
+                            @if($isEbookOnly && empty($order->lulu_job_id))
+                                <button type="button" class="btn btn-sm btn-secondary" disabled title="Disabled for eBook orders">
+                                    <i class="fas fa-ban mr-1"></i> Disabled (eBook)
+                                </button>
+                            @else
+                                <button type="button" class="btn btn-sm btn-primary" id="btn-dispatch-lulu" data-id="{{ $order->id }}">
+                                    <i class="fas fa-paper-plane mr-1"></i> <span id="btn-dispatch-text">{{ !empty($order->lulu_job_id) ? 'Retry Dispatch' : 'Send to Lulu' }}</span>
+                                </button>
+                            @endif
                         </div>
                     </div>
                 </div>

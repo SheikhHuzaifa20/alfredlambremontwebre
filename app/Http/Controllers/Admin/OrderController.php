@@ -285,6 +285,13 @@ class OrderController extends Controller
     {
         $order = Orders::with('order_products.product')->findOrFail($id);
 
+        if (!$order->hasLuluProducts()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Lulu print fulfillment is disabled for this order because it contains only digital eBook(s).',
+            ], 400);
+        }
+
         $luluService = app(\App\Services\LuluService::class);
         $result = $luluService->createPrintJob($order);
 

@@ -493,8 +493,10 @@ class OrderController extends Controller
 			// LULU PRINT API AUTOMATIC FULFILLMENT (Option A)
 			// ============================================
 			try {
-				$luluService = app(\App\Services\LuluService::class);
-				$luluService->createPrintJob($savedOrder);
+				if ($savedOrder->hasLuluProducts()) {
+					$luluService = app(\App\Services\LuluService::class);
+					$luluService->createPrintJob($savedOrder);
+				}
 			} catch (\Throwable $e) {
 				\Illuminate\Support\Facades\Log::error('Lulu fulfillment automatic trigger failed for order #' . $savedOrder->id . ': ' . $e->getMessage());
 			}

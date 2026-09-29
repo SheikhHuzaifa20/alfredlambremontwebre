@@ -36,6 +36,10 @@ class Orders extends Model
     public function hasLuluProducts(): bool
     {
         return $this->order_products->contains(function ($item) {
+            $format = strtolower(trim((string) ($item->mat_language ?? '')));
+            if ($format === 'ebook' || str_contains($format, 'ebook')) {
+                return false;
+            }
             return $item->product && $item->product->is_lulu_fulfillable;
         });
     }

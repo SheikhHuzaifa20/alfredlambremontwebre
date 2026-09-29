@@ -205,6 +205,12 @@ class LuluService
         foreach ($order->order_products as $item) {
             $product = $item->product;
 
+            // Skip digital formats (eBook) - Lulu is for physical print on demand only
+            $format = strtolower(trim((string) ($item->mat_language ?? '')));
+            if ($format === 'ebook' || str_contains($format, 'ebook')) {
+                continue;
+            }
+
             // Only fulfill products that have Lulu fulfillment enabled
             if ($product && !empty($product->is_lulu_fulfillable)) {
                 $podPackageId = trim((string) $product->lulu_pod_package_id);
@@ -237,7 +243,7 @@ class LuluService
         if (empty($lineItems)) {
             $reason = !empty($missingSpecs)
                 ? 'Lulu fulfillment skipped: Some books had missing configuration: ' . implode(', ', $missingSpecs)
-                : 'No Lulu fulfillable books found in this order.';
+                : 'No physical Lulu fulfillable books found in this order (eBooks or digital items are excluded).';
 
             $order->lulu_error_message = $reason;
             $order->save();
