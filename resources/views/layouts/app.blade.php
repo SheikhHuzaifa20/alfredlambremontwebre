@@ -30,7 +30,7 @@
     <!-- END: Page CSS-->
     <link href="{{asset('plugins/vendors/toast-master/css/jquery.toast.css')}}" rel="stylesheet">
     <link href="{{asset('plugins/vendors/perfect-scrollbar/css/perfect-scrollbar.css')}}" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="{{ asset('assets/css/datatables.min.css') }}">
     <link rel="stylesheet" href="https://cdn.datatables.net/rowreorder/1.3.3/css/rowReorder.dataTables.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.dataTables.min.css">
@@ -55,51 +55,87 @@
 
         /* ══ Select2 Multi-Select & Dropdown Overrides ══ */
         .select2-container--default .select2-selection--multiple {
+            display: flex !important;
+            flex-wrap: wrap !important;
+            align-items: center !important;
+            min-height: 42px !important;
+            height: auto !important;
             background-color: #ffffff !important;
-            border: 1px solid #d9d9d9 !important;
+            border: 1px solid #ccd6e6 !important;
             border-radius: 4px !important;
-            min-height: 40px !important;
-            padding: 2px 6px !important;
-            cursor: pointer !important;
+            padding: 3px 6px !important;
+            box-sizing: border-box !important;
+            cursor: text !important;
         }
 
         .select2-container--default.select2-container--focus .select2-selection--multiple {
             border-color: #666ee8 !important;
-            box-shadow: 0 0 0 2px rgba(102, 110, 232, 0.15) !important;
+            box-shadow: 0 0 0 2px rgba(102, 110, 232, 0.18) !important;
         }
 
+        .select2-container--default .select2-selection--multiple .select2-selection__rendered {
+            display: flex !important;
+            flex-wrap: wrap !important;
+            align-items: center !important;
+            width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            list-style: none !important;
+            gap: 4px !important;
+            box-sizing: border-box !important;
+        }
+
+        .select2-container--default .select2-selection--multiple::after,
+        .select2-container--default .select2-selection--multiple .select2-selection__rendered::after {
+            display: none !important;
+        }
+
+        /* Choice Tag (Pill) */
         .select2-container--default .select2-selection--multiple .select2-selection__choice {
+            display: inline-flex !important;
+            align-items: center !important;
             background-color: #666ee8 !important;
             border: 1px solid #5a62d4 !important;
             color: #ffffff !important;
             border-radius: 4px !important;
-            padding: 3px 8px 3px 8px !important;
+            padding: 3px 8px !important;
             font-size: 13px !important;
             font-weight: 500 !important;
-            margin: 3px 5px 3px 0 !important;
-            display: inline-flex !important;
-            align-items: center !important;
             line-height: 1.4 !important;
+            margin: 2px 2px 2px 0 !important;
+            float: none !important;
+            box-sizing: border-box !important;
+            position: relative !important;
         }
 
-        /* Remove default white button/box styling on close cross */
+        .select2-container--default .select2-selection--multiple .select2-selection__choice__display {
+            color: #ffffff !important;
+            padding: 0 4px 0 2px !important;
+            cursor: default !important;
+            display: inline-block !important;
+        }
+
+        /* Remove 'x' button inside choice */
         .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+            position: static !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
             background: transparent !important;
             background-color: transparent !important;
             border: none !important;
             box-shadow: none !important;
             outline: none !important;
             color: #ffffff !important;
-            font-size: 16px !important;
+            font-size: 15px !important;
             font-weight: bold !important;
             line-height: 1 !important;
             padding: 0 4px 0 0 !important;
-            margin-right: 5px !important;
-            margin-left: 0 !important;
+            margin: 0 !important;
             cursor: pointer !important;
             float: none !important;
-            display: inline-block !important;
             opacity: 0.85 !important;
+            transition: opacity 0.15s ease, color 0.15s ease !important;
         }
 
         .select2-container--default .select2-selection--multiple .select2-selection__choice__remove:hover {
@@ -109,12 +145,48 @@
             background-color: transparent !important;
         }
 
+        /* Inline Search Container & Field (Textarea in Select2 4.1) */
+        .select2-container--default .select2-selection--multiple .select2-search--inline {
+            display: inline-flex !important;
+            align-items: center !important;
+            flex: 1 1 60px !important;
+            min-width: 60px !important;
+            max-width: 100% !important;
+            margin: 2px 0 !important;
+            padding: 0 !important;
+            float: none !important;
+            box-sizing: border-box !important;
+        }
+
+        .select2-container--default .select2-selection--multiple .select2-search--inline .select2-search__field {
+            box-sizing: border-box !important;
+            width: 100% !important;
+            min-width: 50px !important;
+            height: 28px !important;
+            min-height: 28px !important;
+            max-height: 28px !important;
+            line-height: 26px !important;
+            padding: 0 6px !important;
+            margin: 0 !important;
+            border: none !important;
+            outline: none !important;
+            background: transparent !important;
+            color: #2b2f3a !important;
+            font-size: 13.5px !important;
+            font-family: inherit !important;
+            box-shadow: none !important;
+            resize: none !important;
+            overflow: hidden !important;
+            vertical-align: middle !important;
+            -webkit-appearance: none !important;
+        }
+
         /* Dropdown panel & options text readability */
         .select2-dropdown {
             background-color: #ffffff !important;
-            border: 1px solid #dcdfe6 !important;
+            border: 1px solid #ccd6e6 !important;
             border-radius: 4px !important;
-            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12) !important;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.12) !important;
             z-index: 1051 !important;
         }
 
@@ -137,7 +209,7 @@
         }
 
         .select2-container--default .select2-search--dropdown .select2-search__field {
-            border: 1px solid #d9d9d9 !important;
+            border: 1px solid #ccd6e6 !important;
             border-radius: 4px !important;
             padding: 6px 10px !important;
             outline: none !important;
