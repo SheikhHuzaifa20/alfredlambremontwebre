@@ -7,17 +7,14 @@
         <svg class="starfield" aria-hidden="true"></svg>
         <div class="wrap">
             <div>
-                <p class="eyebrow">Founder of Exopolitics &middot; 30 published titles</p>
-                <h1>Mapping the <em>Omniverse</em>, one book at a time.</h1>
-                <p class="lede">Fifty years of research into space law, dimensional cosmology, time-travel evidence and
-                    the future of human consciousness — collected here, and available direct from the author.</p>
+                <p class="eyebrow">{{$banner->title}}</p>
+                {!! $banner->description !!}
                 <div class="hero-cta">
-                    <a href="#books" class="btn btn-solid">Browse the catalogue</a>
-                    <a href="#about" class="btn btn-ghost">About Alfred</a>
+                    <a href="{{$banner->catalogue_link}}" class="btn btn-solid">{{$banner->catalogue}}</a>
+                    <a href="{{$banner->about_link}}" class="btn btn-ghost">{{$banner->about}}</a>
                 </div>
                 <div class="credential">
-                    <span>Yale University</span><span>Yale Law School</span><span>Fulbright Scholar</span><span>Judge,
-                        Kuala Lumpur War Crimes Tribunal</span>
+                    {!! $banner->text_2 !!}
                 </div>
             </div>
 
