@@ -15,7 +15,7 @@ use App\banner;
 use Blog;
 use App\imagetable;
 use DB;
-use Mail;
+use Illuminate\Support\Facades\Mail;
 use View;
 use Session;
 use App\Http\Helpers\UserSystemInfoHelper;
@@ -179,15 +179,26 @@ class HomeController extends Controller
             $newsletter->newsletter_email = $email;
             $newsletter->save();
 
-            // Fix: Pass the email string, not the model object
-            Mail::to(config('mail.admin_email'))
-                ->send(new NewsletterAdminMail($email));
+            $adminEmailSent = $this->sendMailSafely(
+                config('mail.admin_email'),
+                new NewsletterAdminMail($email),
+                'newsletter admin notification'
+            );
+            $userEmailSent = $this->sendMailSafely(
+                $email,
+                new NewsletterUserMail($email),
+                'newsletter subscriber confirmation'
+            );
 
-            // Fix: Pass the email string, not the model object
-            Mail::to($email)
-                ->send(new NewsletterUserMail($email));
+            $message = $adminEmailSent && $userEmailSent
+                ? 'Thank you! You have been subscribed successfully.'
+                : 'Your subscription was saved, but an email could not be sent. Please check the mail server settings.';
 
-            return response()->json(['message' => 'Thank you! You have been subscribed successfully.', 'status' => true]);
+            return response()->json([
+                'message' => $message,
+                'status' => true,
+                'emails_sent' => $adminEmailSent && $userEmailSent,
+            ]);
         } else {
             return response()->json(['message' => 'This email is already subscribed.', 'status' => false]);
         }
@@ -234,12 +245,40 @@ class HomeController extends Controller
             'notes' => $request->notes,
         ]);
 
-        Mail::to(config('mail.admin_email'))
-            ->send(new AdminInquiryMail($inquiry));
+        $adminEmailSent = $this->sendMailSafely(
+            config('mail.admin_email'),
+            new AdminInquiryMail($inquiry),
+            'contact admin notification'
+        );
+        $userEmailSent = $this->sendMailSafely(
+            $inquiry->email,
+            new UserInquiryConfirmationMail($inquiry),
+            'contact user confirmation'
+        );
 
-        Mail::to($inquiry->email)
-            ->send(new UserInquiryConfirmationMail($inquiry));
+        $message = $adminEmailSent && $userEmailSent
+            ? 'Your message has been sent successfully.'
+            : 'Your message was saved, but an email could not be sent. Please check the mail server settings.';
 
-        return back()->with('message', 'Your message has been sent successfully!');
+        return back()->with('success', $message);
+    }
+
+    private function sendMailSafely(?string $recipient, \Illuminate\Mail\Mailable $mail, string $context): bool
+    {
+        if (!$recipient) {
+            logger()->error("Unable to send {$context}: recipient email is not configured.");
+            return false;
+        }
+
+        try {
+            Mail::to($recipient)->send($mail);
+            return true;
+        } catch (\Throwable $exception) {
+            logger()->error("Unable to send {$context}.", [
+                'recipient' => $recipient,
+                'error' => $exception->getMessage(),
+            ]);
+            return false;
+        }
     }
 }
