@@ -545,4 +545,34 @@ class ProductController extends Controller
             'pagination' => ['more' => $data->hasMorePages()]
         ]);
     }
+
+    /**
+     * Upload Lulu Book PDF (Interior / Cover) via AJAX
+     */
+    public function uploadPdf(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:pdf|max:204800', // max 200MB
+        ]);
+
+        try {
+            $folder = 'uploads/books/pdf/';
+            $path = $this->uploadFile($request->file('file'), $folder, 'book_pdf');
+            $fullUrl = url($path);
+
+            return response()->json([
+                'success'  => true,
+                'url'      => $fullUrl,
+                'path'     => $path,
+                'filename' => basename($path),
+                'message'  => 'PDF uploaded successfully!'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Upload failed: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }
+

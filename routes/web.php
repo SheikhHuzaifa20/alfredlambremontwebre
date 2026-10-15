@@ -288,6 +288,7 @@ Route::middleware(['auth', 'role:1,2']) // Only super_admin & admin can access /
             Route::get('product/subcategories/select2', [ProductController::class, 'subCatselect2'])->name('admin.product.subcategories.select2');
             Route::post('product/get-attribute-values', [ProductController::class, 'getValues'])->name('admin.product.get-attribute-values');
             Route::post('product/gallery/destroy', [ProductController::class, 'destroyGalleryImage'])->name('admin.product.gallery.destroy');
+            Route::post('product/upload-pdf', [ProductController::class, 'uploadPdf'])->name('admin.product.upload-pdf');
             Route::resource('product', ProductController::class)->names('admin.product');
         });
 
