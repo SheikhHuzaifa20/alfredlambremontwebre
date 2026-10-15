@@ -477,21 +477,29 @@
                                             </div>
 
                                             <div class="col-md-12">
-                                                <div class="form-group">
-                                                    <label for="lulu_interior_url">Interior PDF URL</label>
-                                                    <div class="input-group">
-                                                        <input class="form-control" name="lulu_interior_url" type="url"
-                                                            id="lulu_interior_url" placeholder="https://example.com/books/interior.pdf"
-                                                            value="{{ old('lulu_interior_url') }}">
-                                                        <div class="input-group-append">
-                                                            <label class="btn btn-outline-primary mb-0 d-flex align-items-center upload-pdf-btn" style="cursor: pointer;" title="Upload PDF from computer">
-                                                                <i class="la la-upload mr-1"></i> Upload PDF
-                                                                <input type="file" class="d-none lulu-pdf-uploader" data-target="#lulu_interior_url" accept="application/pdf">
-                                                            </label>
-                                                        </div>
+                                                <div class="form-group mb-2 p-2 border rounded bg-white">
+                                                    <label for="lulu_interior_url" class="font-weight-bold text-dark mb-1">
+                                                        <i class="la la-file-pdf-o text-danger mr-1"></i> Interior PDF (Paperback & Hardcover)
+                                                    </label>
+                                                    <div class="d-flex align-items-center mb-2">
+                                                        <input type="file"
+                                                               class="form-control-file lulu-pdf-uploader"
+                                                               id="file_interior_pdf"
+                                                               name="file_interior_pdf"
+                                                               data-target="#lulu_interior_url"
+                                                               data-status="#status_interior_pdf"
+                                                               accept=".pdf,application/pdf">
                                                     </div>
-                                                    <div class="upload-status small mt-1 text-muted">
-                                                        Direct public URL to print-ready interior PDF (Shared for both Paperback and Hardcover)
+                                                    <div class="input-group">
+                                                        <div class="input-group-prepend">
+                                                            <span class="input-group-text"><i class="la la-link"></i></span>
+                                                        </div>
+                                                        <input class="form-control" name="lulu_interior_url" type="url"
+                                                            id="lulu_interior_url" placeholder="Direct public URL (auto-fills when file selected above)"
+                                                            value="{{ old('lulu_interior_url') }}">
+                                                    </div>
+                                                    <div id="status_interior_pdf" class="upload-status small mt-1 text-muted">
+                                                        Print-ready interior PDF shared for both Paperback and Hardcover
                                                     </div>
                                                 </div>
                                             </div>
@@ -512,21 +520,29 @@
                                             </div>
 
                                             <div class="col-md-12">
-                                                <div class="form-group">
-                                                    <label for="lulu_cover_url">Paperback Cover PDF URL</label>
-                                                    <div class="input-group">
-                                                        <input class="form-control" name="lulu_cover_url" type="url"
-                                                            id="lulu_cover_url" placeholder="https://example.com/books/cover_paperback.pdf"
-                                                            value="{{ old('lulu_cover_url') }}">
-                                                        <div class="input-group-append">
-                                                            <label class="btn btn-outline-primary mb-0 d-flex align-items-center upload-pdf-btn" style="cursor: pointer;" title="Upload PDF from computer">
-                                                                <i class="la la-upload mr-1"></i> Upload PDF
-                                                                <input type="file" class="d-none lulu-pdf-uploader" data-target="#lulu_cover_url" accept="application/pdf">
-                                                            </label>
-                                                        </div>
+                                                <div class="form-group mb-2 p-2 border rounded bg-white">
+                                                    <label for="lulu_cover_url" class="font-weight-bold text-dark mb-1">
+                                                        <i class="la la-file-pdf-o text-danger mr-1"></i> Paperback Cover PDF
+                                                    </label>
+                                                    <div class="d-flex align-items-center mb-2">
+                                                        <input type="file"
+                                                               class="form-control-file lulu-pdf-uploader"
+                                                               id="file_cover_pdf"
+                                                               name="file_cover_pdf"
+                                                               data-target="#lulu_cover_url"
+                                                               data-status="#status_cover_pdf"
+                                                               accept=".pdf,application/pdf">
                                                     </div>
-                                                    <div class="upload-status small mt-1 text-muted">
-                                                        Direct public URL to print-ready Paperback cover PDF
+                                                    <div class="input-group">
+                                                        <div class="input-group-prepend">
+                                                            <span class="input-group-text"><i class="la la-link"></i></span>
+                                                        </div>
+                                                        <input class="form-control" name="lulu_cover_url" type="url"
+                                                            id="lulu_cover_url" placeholder="Direct public URL (auto-fills when file selected above)"
+                                                            value="{{ old('lulu_cover_url') }}">
+                                                    </div>
+                                                    <div id="status_cover_pdf" class="upload-status small mt-1 text-muted">
+                                                        Print-ready Paperback cover PDF
                                                     </div>
                                                 </div>
                                             </div>
@@ -547,21 +563,29 @@
                                             </div>
 
                                             <div class="col-md-12">
-                                                <div class="form-group">
-                                                    <label for="lulu_hardcover_cover_url">Hardcover Cover PDF URL</label>
-                                                    <div class="input-group">
-                                                        <input class="form-control" name="lulu_hardcover_cover_url" type="url"
-                                                            id="lulu_hardcover_cover_url" placeholder="https://example.com/books/cover_hardcover.pdf"
-                                                            value="{{ old('lulu_hardcover_cover_url') }}">
-                                                        <div class="input-group-append">
-                                                            <label class="btn btn-outline-primary mb-0 d-flex align-items-center upload-pdf-btn" style="cursor: pointer;" title="Upload PDF from computer">
-                                                                <i class="la la-upload mr-1"></i> Upload PDF
-                                                                <input type="file" class="d-none lulu-pdf-uploader" data-target="#lulu_hardcover_cover_url" accept="application/pdf">
-                                                            </label>
-                                                        </div>
+                                                <div class="form-group mb-2 p-2 border rounded bg-white">
+                                                    <label for="lulu_hardcover_cover_url" class="font-weight-bold text-dark mb-1">
+                                                        <i class="la la-file-pdf-o text-danger mr-1"></i> Hardcover Cover PDF
+                                                    </label>
+                                                    <div class="d-flex align-items-center mb-2">
+                                                        <input type="file"
+                                                               class="form-control-file lulu-pdf-uploader"
+                                                               id="file_hardcover_cover_pdf"
+                                                               name="file_hardcover_cover_pdf"
+                                                               data-target="#lulu_hardcover_cover_url"
+                                                               data-status="#status_hardcover_cover_pdf"
+                                                               accept=".pdf,application/pdf">
                                                     </div>
-                                                    <div class="upload-status small mt-1 text-muted">
-                                                        Direct public URL to print-ready Hardcover cover PDF
+                                                    <div class="input-group">
+                                                        <div class="input-group-prepend">
+                                                            <span class="input-group-text"><i class="la la-link"></i></span>
+                                                        </div>
+                                                        <input class="form-control" name="lulu_hardcover_cover_url" type="url"
+                                                            id="lulu_hardcover_cover_url" placeholder="Direct public URL (auto-fills when file selected above)"
+                                                            value="{{ old('lulu_hardcover_cover_url') }}">
+                                                    </div>
+                                                    <div id="status_hardcover_cover_pdf" class="upload-status small mt-1 text-muted">
+                                                        Print-ready Hardcover cover PDF
                                                     </div>
                                                 </div>
                                             </div>
@@ -787,23 +811,23 @@
                 if (!fileInput.files || !fileInput.files[0]) return;
 
                 let file = fileInput.files[0];
-                if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
-                    alert('Please select a valid PDF file.');
+                let fileName = file.name;
+                let fileSizeMb = (file.size / (1024 * 1024)).toFixed(2);
+
+                if (!fileName.toLowerCase().endsWith('.pdf')) {
+                    alert('Please select a valid PDF file (.pdf extension required).');
                     $(fileInput).val('');
                     return;
                 }
 
                 let targetInput = $($(this).data('target'));
-                let statusDiv = $(this).closest('.form-group').find('.upload-status');
-                let btn = $(this).closest('label');
-                let originalBtnHtml = '<i class="la la-upload mr-1"></i> Upload PDF<input type="file" class="d-none lulu-pdf-uploader" data-target="' + $(this).data('target') + '" accept="application/pdf">';
+                let statusDiv = $($(this).data('status'));
 
                 let formData = new FormData();
                 formData.append('file', file);
-                formData.append('_token', "{{ csrf_token() }}");
+                formData.append('_token', $('meta[name="csrf-token"]').attr('content') || "{{ csrf_token() }}");
 
-                btn.addClass('disabled').css('pointer-events', 'none').html('<i class="la la-spinner la-spin mr-1"></i> Uploading...');
-                statusDiv.html('<span class="text-primary"><i class="la la-spinner la-spin mr-1"></i> Uploading ' + file.name + ' (' + (file.size / (1024 * 1024)).toFixed(2) + ' MB)... Please wait.</span>');
+                statusDiv.html('<span class="text-primary font-weight-bold"><i class="la la-spinner la-spin mr-1"></i> Uploading ' + fileName + ' (' + fileSizeMb + ' MB)... Please wait.</span>');
 
                 $.ajax({
                     url: "{{ route('admin.product.upload-pdf') }}",
@@ -811,12 +835,13 @@
                     data: formData,
                     processData: false,
                     contentType: false,
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') || "{{ csrf_token() }}"
+                    },
                     success: function(res) {
-                        btn.removeClass('disabled').css('pointer-events', 'auto').html(originalBtnHtml);
-                        $(fileInput).val('');
                         if (res.success) {
                             targetInput.val(res.url);
-                            statusDiv.html('<span class="text-success mr-2"><i class="la la-check-circle"></i> Uploaded: <a href="' + res.url + '" target="_blank" class="font-weight-bold text-success" style="text-decoration: underline;">View Uploaded PDF</a></span>');
+                            statusDiv.html('<span class="text-success font-weight-bold mr-2"><i class="la la-check-circle"></i> Uploaded! <a href="' + res.url + '" target="_blank" class="text-primary font-weight-bold" style="text-decoration: underline;">View Uploaded PDF <i class="la la-external-link"></i></a></span>');
                             if (typeof $.toast === 'function') {
                                 $.toast({
                                     heading: 'Success',
@@ -828,19 +853,19 @@
                                 });
                             }
                         } else {
-                            statusDiv.html('<span class="text-danger"><i class="la la-warning"></i> ' + (res.message || 'Upload failed') + '</span>');
+                            statusDiv.html('<span class="text-danger font-weight-bold"><i class="la la-warning"></i> ' + (res.message || 'Upload failed') + '</span>');
                         }
                     },
                     error: function(xhr) {
-                        btn.removeClass('disabled').css('pointer-events', 'auto').html(originalBtnHtml);
-                        $(fileInput).val('');
                         let errorMsg = 'Upload failed. Please try again.';
                         if (xhr.responseJSON && xhr.responseJSON.message) {
                             errorMsg = xhr.responseJSON.message;
                         } else if (xhr.responseJSON && xhr.responseJSON.errors && xhr.responseJSON.errors.file) {
                             errorMsg = xhr.responseJSON.errors.file[0];
+                        } else if (xhr.statusText) {
+                            errorMsg = 'Error ' + xhr.status + ': ' + xhr.statusText;
                         }
-                        statusDiv.html('<span class="text-danger"><i class="la la-warning"></i> ' + errorMsg + '</span>');
+                        statusDiv.html('<span class="text-danger font-weight-bold"><i class="la la-warning"></i> ' + errorMsg + '</span>');
                         if (typeof $.toast === 'function') {
                             $.toast({
                                 heading: 'Error',

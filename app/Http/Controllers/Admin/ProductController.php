@@ -152,6 +152,24 @@ class ProductController extends Controller
             $categoryIds = $request->category_id ?? $request->category_ids;
             $catString = is_array($categoryIds) ? implode(',', $categoryIds) : ($categoryIds ?? null);
 
+            $interiorUrl = $request->filled('lulu_interior_url') ? trim($request->lulu_interior_url) : null;
+            if ($request->hasFile('file_interior_pdf')) {
+                $path = $this->uploadFile($request->file('file_interior_pdf'), 'uploads/books/pdf/', 'interior');
+                $interiorUrl = url($path);
+            }
+
+            $coverUrl = $request->filled('lulu_cover_url') ? trim($request->lulu_cover_url) : null;
+            if ($request->hasFile('file_cover_pdf')) {
+                $path = $this->uploadFile($request->file('file_cover_pdf'), 'uploads/books/pdf/', 'cover_pb');
+                $coverUrl = url($path);
+            }
+
+            $hardcoverCoverUrl = $request->filled('lulu_hardcover_cover_url') ? trim($request->lulu_hardcover_cover_url) : null;
+            if ($request->hasFile('file_hardcover_cover_pdf')) {
+                $path = $this->uploadFile($request->file('file_hardcover_cover_pdf'), 'uploads/books/pdf/', 'cover_hc');
+                $hardcoverCoverUrl = url($path);
+            }
+
             $product = Product::create([
                 'name'                => $request->name,
                 'description'         => $request->description,
@@ -167,9 +185,9 @@ class ProductController extends Controller
                 'is_lulu_fulfillable'           => $request->has('is_lulu_fulfillable') ? 1 : 0,
                 'lulu_pod_package_id'           => $request->filled('lulu_pod_package_id') ? trim($request->lulu_pod_package_id) : null,
                 'lulu_hardcover_pod_package_id' => $request->filled('lulu_hardcover_pod_package_id') ? trim($request->lulu_hardcover_pod_package_id) : null,
-                'lulu_interior_url'             => $request->filled('lulu_interior_url') ? trim($request->lulu_interior_url) : null,
-                'lulu_cover_url'                => $request->filled('lulu_cover_url') ? trim($request->lulu_cover_url) : null,
-                'lulu_hardcover_cover_url'      => $request->filled('lulu_hardcover_cover_url') ? trim($request->lulu_hardcover_cover_url) : null,
+                'lulu_interior_url'             => $interiorUrl,
+                'lulu_cover_url'                => $coverUrl,
+                'lulu_hardcover_cover_url'      => $hardcoverCoverUrl,
                 'created_by'                    => auth()->id(),
             ]);
 
@@ -238,6 +256,24 @@ class ProductController extends Controller
             $categoryIds = $request->category_id ?? $request->category_ids;
             $catString = is_array($categoryIds) ? implode(',', $categoryIds) : ($categoryIds ?? $product->category_id);
 
+            $interiorUrl = $request->filled('lulu_interior_url') ? trim($request->lulu_interior_url) : $product->lulu_interior_url;
+            if ($request->hasFile('file_interior_pdf')) {
+                $path = $this->uploadFile($request->file('file_interior_pdf'), 'uploads/books/pdf/', 'interior');
+                $interiorUrl = url($path);
+            }
+
+            $coverUrl = $request->filled('lulu_cover_url') ? trim($request->lulu_cover_url) : $product->lulu_cover_url;
+            if ($request->hasFile('file_cover_pdf')) {
+                $path = $this->uploadFile($request->file('file_cover_pdf'), 'uploads/books/pdf/', 'cover_pb');
+                $coverUrl = url($path);
+            }
+
+            $hardcoverCoverUrl = $request->filled('lulu_hardcover_cover_url') ? trim($request->lulu_hardcover_cover_url) : $product->lulu_hardcover_cover_url;
+            if ($request->hasFile('file_hardcover_cover_pdf')) {
+                $path = $this->uploadFile($request->file('file_hardcover_cover_pdf'), 'uploads/books/pdf/', 'cover_hc');
+                $hardcoverCoverUrl = url($path);
+            }
+
             $product->update([
                 'name'                => $request->name,
                 'description'         => $request->description,
@@ -253,9 +289,9 @@ class ProductController extends Controller
                 'is_lulu_fulfillable'           => $request->has('is_lulu_fulfillable') ? 1 : 0,
                 'lulu_pod_package_id'           => $request->filled('lulu_pod_package_id') ? trim($request->lulu_pod_package_id) : null,
                 'lulu_hardcover_pod_package_id' => $request->filled('lulu_hardcover_pod_package_id') ? trim($request->lulu_hardcover_pod_package_id) : null,
-                'lulu_interior_url'             => $request->filled('lulu_interior_url') ? trim($request->lulu_interior_url) : null,
-                'lulu_cover_url'                => $request->filled('lulu_cover_url') ? trim($request->lulu_cover_url) : null,
-                'lulu_hardcover_cover_url'      => $request->filled('lulu_hardcover_cover_url') ? trim($request->lulu_hardcover_cover_url) : null,
+                'lulu_interior_url'             => $interiorUrl,
+                'lulu_cover_url'                => $coverUrl,
+                'lulu_hardcover_cover_url'      => $hardcoverCoverUrl,
                 'updated_by'                    => auth()->id(),
             ]);
 
@@ -551,13 +587,25 @@ class ProductController extends Controller
      */
     public function uploadPdf(Request $request)
     {
-        $request->validate([
-            'file' => 'required|file|mimes:pdf|max:204800', // max 200MB
-        ]);
+        if (!$request->hasFile('file') || !$request->file('file')->isValid()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No valid file was uploaded.'
+            ], 422);
+        }
+
+        $file = $request->file('file');
+        $ext = strtolower($file->getClientOriginalExtension());
+        if ($ext !== 'pdf') {
+            return response()->json([
+                'success' => false,
+                'message' => 'The uploaded file must be a PDF file (.pdf extension required).'
+            ], 422);
+        }
 
         try {
             $folder = 'uploads/books/pdf/';
-            $path = $this->uploadFile($request->file('file'), $folder, 'book_pdf');
+            $path = $this->uploadFile($file, $folder, 'book_pdf');
             $fullUrl = url($path);
 
             return response()->json([
