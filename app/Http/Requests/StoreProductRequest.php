@@ -25,7 +25,10 @@ class StoreProductRequest extends FormRequest
             'discount_price'    => 'nullable|numeric|min:0',
 
             'paperback_price'   => 'nullable|string|max:255',
+            'hardcover_price'   => 'nullable|string|max:255',
             'ebook_price'       => 'nullable|string|max:255',
+            'lulu_hardcover_pod_package_id' => 'nullable|string|max:100',
+            'lulu_hardcover_cover_url'      => 'nullable|url|max:1000',
 
             'sku'               => 'nullable|string|max:100',
             'stock'             => 'nullable',

@@ -213,12 +213,21 @@ class LuluService
 
             // Only fulfill products that have Lulu fulfillment enabled
             if ($product && !empty($product->is_lulu_fulfillable)) {
-                $podPackageId = trim((string) $product->lulu_pod_package_id);
-                $coverUrl = trim((string) $product->lulu_cover_url);
+                $isHardcover = ($format === 'hardcover' || str_contains($format, 'hardcover'));
+
+                // Pick Hardcover specific POD package ID and Cover URL if available, otherwise default
+                if ($isHardcover && !empty($product->lulu_hardcover_pod_package_id)) {
+                    $podPackageId = trim((string) $product->lulu_hardcover_pod_package_id);
+                    $coverUrl = trim((string) ($product->lulu_hardcover_cover_url ?: $product->lulu_cover_url));
+                } else {
+                    $podPackageId = trim((string) $product->lulu_pod_package_id);
+                    $coverUrl = trim((string) $product->lulu_cover_url);
+                }
                 $interiorUrl = trim((string) $product->lulu_interior_url);
 
                 if (empty($podPackageId) || empty($interiorUrl) || empty($coverUrl)) {
-                    $missingSpecs[] = $product->name . " (Missing POD ID or Interior/Cover URL)";
+                    $editionName = $isHardcover ? 'Hardcover' : 'Paperback';
+                    $missingSpecs[] = $product->name . " ({$editionName}: Missing POD ID or Interior/Cover URL)";
                     continue;
                 }
 

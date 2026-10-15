@@ -32,13 +32,16 @@ class Product extends Model
         'text2',
         'short_text',
         'paperback_price',
+        'hardcover_price',
         'ebook_price',
         'rustica_price',
         'taschenbuch_price',
         'is_lulu_fulfillable',
         'lulu_pod_package_id',
+        'lulu_hardcover_pod_package_id',
         'lulu_interior_url',
         'lulu_cover_url',
+        'lulu_hardcover_cover_url',
     ];
 
     protected $casts = [

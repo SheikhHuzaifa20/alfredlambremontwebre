@@ -69,6 +69,7 @@ class ProductController extends Controller
             })
             ->addColumn('sub_category', fn($row) => $row->subCategory->name ?? '-')
             ->addColumn('paperback_price', fn($row) => $row->paperback_price ?? '-')
+            ->addColumn('hardcover_price', fn($row) => $row->hardcover_price ?? '-')
             ->addColumn('ebook_price', fn($row) => $row->ebook_price ?? '-')
             ->addColumn('rustica_price', fn($row) => $row->rustica_price ?? '-')
             ->addColumn('taschenbuch_price', fn($row) => $row->taschenbuch_price ?? '-')
@@ -158,15 +159,18 @@ class ProductController extends Controller
                 'slug'                => Str::slug($request->name),
                 'text2'               => $request->text2,
                 'short_text'          => $request->short_text,
-                'paperback_price'     => $request->paperback_price,
-                'ebook_price'         => $request->ebook_price,
-                'rustica_price'       => $request->rustica_price,
-                'taschenbuch_price'   => $request->taschenbuch_price,
-                'is_lulu_fulfillable' => $request->has('is_lulu_fulfillable') ? 1 : 0,
-                'lulu_pod_package_id' => $request->filled('lulu_pod_package_id') ? trim($request->lulu_pod_package_id) : null,
-                'lulu_interior_url'   => $request->filled('lulu_interior_url') ? trim($request->lulu_interior_url) : null,
-                'lulu_cover_url'      => $request->filled('lulu_cover_url') ? trim($request->lulu_cover_url) : null,
-                'created_by'          => auth()->id(),
+                'paperback_price'               => $request->paperback_price,
+                'hardcover_price'               => $request->hardcover_price,
+                'ebook_price'                   => $request->ebook_price,
+                'rustica_price'                 => $request->rustica_price,
+                'taschenbuch_price'             => $request->taschenbuch_price,
+                'is_lulu_fulfillable'           => $request->has('is_lulu_fulfillable') ? 1 : 0,
+                'lulu_pod_package_id'           => $request->filled('lulu_pod_package_id') ? trim($request->lulu_pod_package_id) : null,
+                'lulu_hardcover_pod_package_id' => $request->filled('lulu_hardcover_pod_package_id') ? trim($request->lulu_hardcover_pod_package_id) : null,
+                'lulu_interior_url'             => $request->filled('lulu_interior_url') ? trim($request->lulu_interior_url) : null,
+                'lulu_cover_url'                => $request->filled('lulu_cover_url') ? trim($request->lulu_cover_url) : null,
+                'lulu_hardcover_cover_url'      => $request->filled('lulu_hardcover_cover_url') ? trim($request->lulu_hardcover_cover_url) : null,
+                'created_by'                    => auth()->id(),
             ]);
 
             if ($request->hasFile('image')) {
@@ -241,15 +245,18 @@ class ProductController extends Controller
                 'slug'                => Str::slug($request->name),
                 'text2'               => $request->text2 ?? $product->text2,
                 'short_text'          => $request->short_text ?? $product->short_text,
-                'paperback_price'     => $request->paperback_price ?? $product->paperback_price,
-                'ebook_price'         => $request->ebook_price ?? $product->ebook_price,
-                'rustica_price'       => $request->rustica_price ?? $product->rustica_price,
-                'taschenbuch_price'   => $request->taschenbuch_price ?? $product->taschenbuch_price,
-                'is_lulu_fulfillable' => $request->has('is_lulu_fulfillable') ? 1 : 0,
-                'lulu_pod_package_id' => $request->filled('lulu_pod_package_id') ? trim($request->lulu_pod_package_id) : null,
-                'lulu_interior_url'   => $request->filled('lulu_interior_url') ? trim($request->lulu_interior_url) : null,
-                'lulu_cover_url'      => $request->filled('lulu_cover_url') ? trim($request->lulu_cover_url) : null,
-                'updated_by'          => auth()->id(),
+                'paperback_price'               => $request->paperback_price,
+                'hardcover_price'               => $request->hardcover_price,
+                'ebook_price'                   => $request->ebook_price,
+                'rustica_price'                 => $request->rustica_price,
+                'taschenbuch_price'             => $request->taschenbuch_price,
+                'is_lulu_fulfillable'           => $request->has('is_lulu_fulfillable') ? 1 : 0,
+                'lulu_pod_package_id'           => $request->filled('lulu_pod_package_id') ? trim($request->lulu_pod_package_id) : null,
+                'lulu_hardcover_pod_package_id' => $request->filled('lulu_hardcover_pod_package_id') ? trim($request->lulu_hardcover_pod_package_id) : null,
+                'lulu_interior_url'             => $request->filled('lulu_interior_url') ? trim($request->lulu_interior_url) : null,
+                'lulu_cover_url'                => $request->filled('lulu_cover_url') ? trim($request->lulu_cover_url) : null,
+                'lulu_hardcover_cover_url'      => $request->filled('lulu_hardcover_cover_url') ? trim($request->lulu_hardcover_cover_url) : null,
+                'updated_by'                    => auth()->id(),
             ]);
 
             if ($request->hasFile('image')) {

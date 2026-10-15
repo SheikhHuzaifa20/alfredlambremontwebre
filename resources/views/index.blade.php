@@ -186,6 +186,9 @@
                                 if($product->paperback_price && $product->paperback_price > 0) {
                                     $formats[] = ['f' => 'Paperback', 'p' => $product->paperback_price];
                                 }
+                                if($product->hardcover_price && $product->hardcover_price > 0) {
+                                    $formats[] = ['f' => 'Hardcover', 'p' => $product->hardcover_price];
+                                }
                                 if($product->ebook_price && $product->ebook_price > 0) {
                                     $formats[] = ['f' => 'eBook', 'p' => $product->ebook_price];
                                 }

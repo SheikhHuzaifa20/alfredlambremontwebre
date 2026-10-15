@@ -78,6 +78,7 @@
                                     <th>Book Name</th>
                                     <th>Category</th>
                                     <th>Paperback Price</th>
+                                    <th>Hardcover Price</th>
                                     <th>eBook Price</th>
                                     <th>Image</th>
                                     <th>Status</th>
@@ -193,6 +194,7 @@ $(function() {
             {data: 'name', name: 'name'},
             {data: 'category', name: 'category'},
             {data: 'paperback_price', name: 'paperback_price'},
+            {data: 'hardcover_price', name: 'hardcover_price'},
             {data: 'ebook_price', name: 'ebook_price'},
             {data: 'image', name: 'image', orderable: false, searchable: false},
             {data: 'status', name: 'status', orderable: false, searchable: false},

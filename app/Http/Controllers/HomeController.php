@@ -107,6 +107,9 @@ class HomeController extends Controller
         if ($product->paperback_price && $product->paperback_price > 0) {
             $formats[] = ['f' => 'Paperback', 'p' => (float) $product->paperback_price];
         }
+        if ($product->hardcover_price && $product->hardcover_price > 0) {
+            $formats[] = ['f' => 'Hardcover', 'p' => (float) $product->hardcover_price];
+        }
         if ($product->ebook_price && $product->ebook_price > 0) {
             $formats[] = ['f' => 'eBook', 'p' => (float) $product->ebook_price];
         }

@@ -242,13 +242,21 @@
                                             </div>
                                             <div class="col-md-6">
                                                 <div class="form-group">
+                                                    <label for="hardcover_price">Hardcover Price</label>
+                                                    <input class="form-control" name="hardcover_price" type="text"
+                                                        id="hardcover_price"
+                                                        value="{{ old('hardcover_price', $product->hardcover_price) }}">
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-group">
                                                     <label for="ebook_price">EBOOK Price</label>
                                                     <input class="form-control" name="ebook_price" type="text"
                                                         id="ebook_price"
                                                         value="{{ old('ebook_price', $product->ebook_price) }}">
                                                 </div>
                                             </div>
-                                            <div class="col-md-6">
+                                            <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label for="rustica_price">Rústica Price</label>
                                                     <input class="form-control" name="rustica_price" type="text"
@@ -256,7 +264,7 @@
                                                         value="{{ old('rustica_price', $product->rustica_price) }}">
                                                 </div>
                                             </div>
-                                            <div class="col-md-6">
+                                            <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label for="taschenbuch_price">Taschenbuch Price</label>
                                                     <input class="form-control" name="taschenbuch_price" type="text"
@@ -317,31 +325,61 @@
 
                                             <div class="col-md-12">
                                                 <div class="form-group">
-                                                    <label for="lulu_pod_package_id">Lulu POD Package ID</label>
-                                                    <input class="form-control" name="lulu_pod_package_id" type="text"
-                                                        id="lulu_pod_package_id" placeholder="e.g. 0600X0900BWSTDPB060UW444MXX"
-                                                        value="{{ old('lulu_pod_package_id', $product->lulu_pod_package_id) }}">
-                                                    <small class="text-muted">Trim size, binding, paper, color code from Lulu</small>
-                                                </div>
-                                            </div>
-
-                                            <div class="col-md-12">
-                                                <div class="form-group">
                                                     <label for="lulu_interior_url">Interior PDF URL</label>
                                                     <input class="form-control" name="lulu_interior_url" type="url"
                                                         id="lulu_interior_url" placeholder="https://example.com/books/interior.pdf"
                                                         value="{{ old('lulu_interior_url', $product->lulu_interior_url) }}">
-                                                    <small class="text-muted">Direct public URL to print-ready interior PDF</small>
+                                                    <small class="text-muted">Direct public URL to print-ready interior PDF (Shared for both Paperback and Hardcover)</small>
+                                                </div>
+                                            </div>
+
+                                            {{-- Paperback Lulu Specs --}}
+                                            <div class="col-md-12 mt-1">
+                                                <h6 class="font-weight-bold text-primary border-bottom pb-1"><i class="fas fa-book-open mr-1"></i> Paperback Lulu Settings</h6>
+                                            </div>
+
+                                            <div class="col-md-12">
+                                                <div class="form-group">
+                                                    <label for="lulu_pod_package_id">Paperback POD Package ID</label>
+                                                    <input class="form-control" name="lulu_pod_package_id" type="text"
+                                                        id="lulu_pod_package_id" placeholder="e.g. 0850X1100BWSTDPB060UW444GXX"
+                                                        value="{{ old('lulu_pod_package_id', $product->lulu_pod_package_id) }}">
+                                                    <small class="text-muted">Lulu format code for Paperback (contains PB)</small>
                                                 </div>
                                             </div>
 
                                             <div class="col-md-12">
                                                 <div class="form-group">
-                                                    <label for="lulu_cover_url">Cover PDF URL</label>
+                                                    <label for="lulu_cover_url">Paperback Cover PDF URL</label>
                                                     <input class="form-control" name="lulu_cover_url" type="url"
-                                                        id="lulu_cover_url" placeholder="https://example.com/books/cover.pdf"
+                                                        id="lulu_cover_url" placeholder="https://example.com/books/cover_paperback.pdf"
                                                         value="{{ old('lulu_cover_url', $product->lulu_cover_url) }}">
-                                                    <small class="text-muted">Direct public URL to print-ready cover PDF</small>
+                                                    <small class="text-muted">Direct public URL to print-ready Paperback cover PDF</small>
+                                                </div>
+                                            </div>
+
+                                            {{-- Hardcover Lulu Specs --}}
+                                            <div class="col-md-12 mt-2">
+                                                <h6 class="font-weight-bold text-primary border-bottom pb-1"><i class="fas fa-book mr-1"></i> Hardcover Lulu Settings</h6>
+                                            </div>
+
+                                            <div class="col-md-12">
+                                                <div class="form-group">
+                                                    <label for="lulu_hardcover_pod_package_id">Hardcover POD Package ID</label>
+                                                    <input class="form-control" name="lulu_hardcover_pod_package_id" type="text"
+                                                        id="lulu_hardcover_pod_package_id" placeholder="e.g. 0850X1100BWSTDCW060UW444GXX"
+                                                        value="{{ old('lulu_hardcover_pod_package_id', $product->lulu_hardcover_pod_package_id) }}">
+                                                    <small class="text-muted">Lulu format code for Hardcover (contains CW)</small>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-12">
+                                                <div class="form-group">
+                                                    <label for="lulu_hardcover_cover_url">Hardcover Cover PDF URL</label>
+                                                    <input class="form-control" name="lulu_hardcover_cover_url" type="url"
+                                                        id="lulu_hardcover_cover_url" placeholder="https://example.com/books/cover_hardcover.pdf"
+                                                        value="{{ old('lulu_hardcover_cover_url', $product->lulu_hardcover_cover_url) }}">
+                                                    <small class="text-muted">Direct public URL to print-ready Hardcover cover PDF</small>
                                                 </div>
                                             </div>
                                         </div>
