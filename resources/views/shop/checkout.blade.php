@@ -566,7 +566,7 @@
                     {{-- Stripe --}}
                     <div class="co-pay-body active" id="bodyStripe">
                         <div class="stripe-form-wrapper"
-                             data-stripe-publishable-key="{{ env('STRIPE_KEY') }}"
+                             data-stripe-publishable-key="{{ config('services.stripe.key') }}"
                              data-cc-on-file="false">
                             <div id="card-element"></div>
                             <div id="card-errors" role="alert"></div>
@@ -629,7 +629,7 @@ document.querySelectorAll('.co-pay-tab-btn').forEach(btn => {
 });
 
 /* ── Stripe ── */
-const stripe   = Stripe('{{ env("STRIPE_KEY") }}');
+const stripe   = Stripe('{{ config("services.stripe.key") }}');
 const elements = stripe.elements();
 const style = {
     base: {

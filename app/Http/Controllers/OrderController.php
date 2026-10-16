@@ -416,7 +416,7 @@ class OrderController extends Controller
 					return redirect()->back()->withInput()->with('error', $msg)->with('stripe_error', $msg);
 				}
 
-				\Stripe\Stripe::setApiKey(env('STRIPE_SECRET'));
+				\Stripe\Stripe::setApiKey(config('services.stripe.secret'));
 
 				// Create Customer
 				$customer = \Stripe\Customer::create([
@@ -455,7 +455,7 @@ class OrderController extends Controller
 				}
 			} catch (\Throwable $e) {
 				\Illuminate\Support\Facades\Log::error('Payment Error on Checkout: ' . $e->getMessage());
-				$msg = 'Payment Error: ' . $e->getMessage();
+				$msg = 'Payment could not be processed. Please try again later.';
 				Session::flash('flash_message', $msg);
 				Session::flash('alert-class', 'alert-danger');
 				return redirect()->back()->withInput()->with('error', $msg)->with('stripe_error', $msg);
