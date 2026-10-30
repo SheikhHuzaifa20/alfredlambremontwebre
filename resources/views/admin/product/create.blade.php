@@ -426,6 +426,15 @@
                                                     </select>
                                                 </div>
                                             </div>
+                                            <div class="col-md-12">
+                                                <label class="d-block font-weight-bold">Featured Book</label>
+                                                <label class="switch">
+                                                    <input type="checkbox" name="is_featured" value="1"
+                                                        {{ old('is_featured') ? 'checked' : '' }}>
+                                                    <span class="slider"></span>
+                                                </label>
+                                                <small class="text-muted d-block mt-1">Show this book in Featured and move it to the top.</small>
+                                            </div>
 
                                             {{-- <div class="col-md-12" id="subcat-container" style="display:none;">
                                                 <div class="form-group">

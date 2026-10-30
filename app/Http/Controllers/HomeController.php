@@ -56,6 +56,7 @@ class HomeController extends Controller
         // Sare products load karo taake filter tabs sahi kaam karein
         $products = Product::with('primaryImage')
             ->where('status', 1)
+            ->orderByDesc('is_featured')
             ->orderByDesc('id')
             ->get();
 
@@ -64,7 +65,10 @@ class HomeController extends Controller
             ->orderByDesc('id')
             ->first();
 
-        $categories = DB::table('category')->where('status', 1)->get();
+        $categories = DB::table('category')
+            ->where('status', 1)
+            ->whereRaw('LOWER(name) <> ?', ['featured'])
+            ->get();
         $page = DB::table('pages')->where('id', '1')->first();
         $section = DB::table('sections')->where('page_id', '1')->get();
 
@@ -86,11 +90,15 @@ class HomeController extends Controller
 
     public function books()
     {
-        $categories = DB::table('category')->where('status', 1)->get();
-
         $products = Product::with('primaryImage')
             ->where('status', 1)
+            ->orderByDesc('is_featured')
             ->orderByDesc('id')
+            ->get();
+
+        $categories = DB::table('category')
+            ->where('status', 1)
+            ->whereRaw('LOWER(name) <> ?', ['featured'])
             ->get();
 
         return view('books', compact('products', 'categories'));

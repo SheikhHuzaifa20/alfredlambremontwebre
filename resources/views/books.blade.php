@@ -25,6 +25,7 @@
             <!-- FILTERS -->
             <div class="filters" id="filters" role="group" aria-label="Filter books">
                 <button class="filter-btn active" data-filter="all">All</button>
+                <button class="filter-btn" data-filter="featured">Featured</button>
                 @foreach ($categories as $cat)
                     <button class="filter-btn" data-filter="{{ $cat->id }}">{{ $cat->name }}</button>
                 @endforeach
@@ -36,7 +37,11 @@
                     @php
                         // Use category_id directly (comma-separated IDs from DB)
                         $rawCategoryIds = array_filter(array_map('trim', explode(',', $product->category_id ?? '')));
-                        $filterKeysString = !empty($rawCategoryIds) ? implode(',', $rawCategoryIds) : 'all';
+                        $filterKeys = $rawCategoryIds;
+                        if ($product->is_featured) {
+                            $filterKeys[] = 'featured';
+                        }
+                        $filterKeysString = !empty($filterKeys) ? implode(',', $filterKeys) : 'all';
 
                         // Build formats with price
                         $formats = [];

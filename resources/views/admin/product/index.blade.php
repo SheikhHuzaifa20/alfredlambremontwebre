@@ -82,6 +82,7 @@
                                     <th>eBook Price</th>
                                     <th>Image</th>
                                     <th>Status</th>
+                                    <th>Featured</th>
                                     <th>Created At</th>
                                     <th>Action</th>
                                 </tr>
@@ -198,6 +199,7 @@ $(function() {
             {data: 'ebook_price', name: 'ebook_price'},
             {data: 'image', name: 'image', orderable: false, searchable: false},
             {data: 'status', name: 'status', orderable: false, searchable: false},
+            {data: 'is_featured', name: 'is_featured', orderable: false, searchable: false},
             {
                 data: 'created_at',
                 name: 'created_at'

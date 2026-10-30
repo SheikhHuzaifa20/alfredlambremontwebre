@@ -46,6 +46,7 @@ class Product extends Model
 
     protected $casts = [
         'is_lulu_fulfillable' => 'boolean',
+        'is_featured' => 'boolean',
     ];
 
     public function getPriceAttribute()

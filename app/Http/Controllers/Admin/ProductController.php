@@ -117,7 +117,7 @@ class ProductController extends Controller
                 }
                 return $actions ?: '<span class="text-muted">No actions</span>';
             })
-            ->rawColumns(['image', 'status', 'action'])
+            ->rawColumns(['image', 'status', 'is_featured', 'action'])
             ->make(true);
     }
 
@@ -182,6 +182,7 @@ class ProductController extends Controller
                 'ebook_price'                   => $request->ebook_price,
                 'rustica_price'                 => $request->rustica_price,
                 'taschenbuch_price'             => $request->taschenbuch_price,
+                'is_featured'                    => $request->has('is_featured') ? 1 : 0,
                 'is_lulu_fulfillable'           => $request->has('is_lulu_fulfillable') ? 1 : 0,
                 'lulu_pod_package_id'           => $request->filled('lulu_pod_package_id') ? trim($request->lulu_pod_package_id) : null,
                 'lulu_hardcover_pod_package_id' => $request->filled('lulu_hardcover_pod_package_id') ? trim($request->lulu_hardcover_pod_package_id) : null,
@@ -286,6 +287,7 @@ class ProductController extends Controller
                 'ebook_price'                   => $request->ebook_price,
                 'rustica_price'                 => $request->rustica_price,
                 'taschenbuch_price'             => $request->taschenbuch_price,
+                'is_featured'                    => $request->has('is_featured') ? 1 : 0,
                 'is_lulu_fulfillable'           => $request->has('is_lulu_fulfillable') ? 1 : 0,
                 'lulu_pod_package_id'           => $request->filled('lulu_pod_package_id') ? trim($request->lulu_pod_package_id) : null,
                 'lulu_hardcover_pod_package_id' => $request->filled('lulu_hardcover_pod_package_id') ? trim($request->lulu_hardcover_pod_package_id) : null,
@@ -623,4 +625,3 @@ class ProductController extends Controller
         }
     }
 }
-
